@@ -1,0 +1,14 @@
+<?php
+
+namespace Unity\IoC\Exceptions;
+
+use Psr\Container\NotFoundExceptionInterface;
+
+/**
+ * Class NonInjectableClassException
+ * @package Unity\IoC\Exceptions
+ */
+class NonInjectableClassException extends \Exception implements NotFoundExceptionInterface
+{
+
+}

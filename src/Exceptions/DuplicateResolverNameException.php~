@@ -1,0 +1,12 @@
+<?php
+
+namespace Unity\IoC\Exceptions;
+
+/**
+ * Class DuplicateResolverNameException
+ * @package Unity\IoC\Exceptions
+ */
+class DuplicateResolverNameException extends \Exception implements DuplicateResolverNameExceptionInterface
+{
+
+}

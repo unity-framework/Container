@@ -1,0 +1,33 @@
+{
+    "name": "php-unity/container",
+    "description": "The Unity framework psr-11 implementation",
+    "type": "library",
+    "require": {
+        "psr/container": "^1.0",
+        "php-unity/helpers": "dev-master",
+        "phpunit/phpunit": "^6.2"
+    },
+    "require-dev": {
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "e200",
+            "email": "eleandro@inbox.ru"
+        }
+    ],
+    "minimum-stability": "dev",
+    "prefer-stable" : true,
+    "autoload": {
+	    "psr-4": {
+	            "Unity\\Component\\IoC\\": "src/",
+        	    "Test\\": "tests"
+	    }
+    },
+    "repositories": [
+    	{
+	    	"type": "vcs",
+    		"url": "../Helpers"
+    	}
+    ]
+}
