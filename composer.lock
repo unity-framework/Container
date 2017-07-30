@@ -211,7 +211,7 @@
             "source": {
                 "type": "git",
                 "url": "../Helpers",
-                "reference": "923b8bd3d2cb664c28e4ed804f9dae43f2f4b983"
+                "reference": "78baec8be207023e3c72efab8a2103f646870657"
             },
             "require-dev": {
                 "phpunit/phpunit": "^6.2"
@@ -232,7 +232,7 @@
                 }
             ],
             "description": "A collection of helper classes for Unity framework packages",
-            "time": "2017-07-29 15:13:27"
+            "time": "2017-07-29 21:23:21"
         },
         {
             "name": "phpdocumentor/reflection-common",

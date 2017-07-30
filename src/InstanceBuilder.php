@@ -2,16 +2,17 @@
 
 namespace Unity\Component\IoC;
 
-use Unity\Helpers\Str;
-use Unity\Component\IoC\Exceptions\NonInjectableClassException;
-
 class InstanceBuilder
 {
     /**
-     * @var bool $hasDependency Tells if was found at least
-     * one required dependency for the instantiating class
+     * @var bool $hasDependency
      */
     protected $hasDependency;
+
+    /**
+     * @var bool $autowiring
+     */
+    protected static $autowiring = true;
 
     /**
      * @var InstanceBuilder The current and top most
@@ -19,12 +20,8 @@ class InstanceBuilder
      */
     protected static $instance;
 
-    private function __construct($innerInstance = false)
-    {
-        $this->innerInstance = $innerInstance;
-    }
-
     private function __clone(){}
+    private function __construct(){}
 
     /**
      * Build a class, instantiate
@@ -42,20 +39,42 @@ class InstanceBuilder
     }
 
     /**
+     * Sets if InstanceBuilder can search for
+     * dependencies in the entry and try resolve them
+     *
+     * @param bool $enabled
+     */
+    static function autowiring($enabled = true)
+    {
+        static::$autowiring = $enabled;
+    }
+
+    /**
      * Start the building of the instantiating
      *
      * @param $class
      * @return object
      */
-    protected function resolve($class)
+    function resolve($class)
     {
         $refClass = $this->getReflectionClass($class);
 
-        if($this->hasDependencies())
+        if($this->canAutowiring() && $this->hasDependencies())
             return $refClass->newInstanceArgs($this->getDependencies($refClass));
         else
             return $refClass->newInstanceWithoutConstructor();
     }
+
+    /**
+     * Checks if the autowiring is enabled
+     *
+     * @return bool
+     */
+    function canAutowiring()
+    {
+        return static::$autowiring;
+    }
+
     /**
      * Returns an array with all necessary
      * dependencies to build the instantiating
@@ -64,7 +83,7 @@ class InstanceBuilder
      * @param \ReflectionClass $refClass
      * @return array
      */
-    protected function getDependencies(\ReflectionClass $refClass)
+    function getDependencies(\ReflectionClass $refClass)
     {
         return array_map(function (\ReflectionType $type){
 
@@ -73,9 +92,7 @@ class InstanceBuilder
                 if(!$this->hasDependency)
                         $this->hasDependency = true;
 
-                $ib = new InstanceBuilder(true);
-
-                return $ib->resolve($type);
+                return (new InstanceBuilder)->resolve($type);
             }
 
             return null;
@@ -86,7 +103,7 @@ class InstanceBuilder
      * @return bool Return true if was founded at least one
      * required dependency for the instantiating class
      */
-    protected function hasDependencies()
+    function hasDependencies()
     {
         return $this->hasDependency;
     }
@@ -99,7 +116,7 @@ class InstanceBuilder
      * @param \ReflectionClass $refClass
      * @return array
      */
-    protected function getParametersType(\ReflectionClass $refClass)
+    function getParametersType(\ReflectionClass $refClass)
     {
         $params = [];
 
@@ -122,7 +139,7 @@ class InstanceBuilder
      * @param \ReflectionClass $refClass
      * @return bool
      */
-    protected function hasParameters(\ReflectionClass $refClass)
+    function hasParameters(\ReflectionClass $refClass)
     {
         $constructor = $refClass->getConstructor();
 
@@ -136,7 +153,7 @@ class InstanceBuilder
      * @param string|null $class
      * @return \ReflectionClass
      */
-    protected function getReflectionClass($class = null)
+    function getReflectionClass($class = null)
     {
         return new \ReflectionClass($class);
     }

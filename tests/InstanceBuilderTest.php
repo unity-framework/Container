@@ -1,34 +1,28 @@
 <?php
 
+use PHPUnit\Framework\TestCase;
 use Unity\Component\IoC\InstanceBuilder;
 use Test\Helpers\Foo;
 use Test\Helpers\Bar;
 
 class InstanceBuilderTest extends TestCase
 {
+    function testAutowiring()
+    {
+        $ib = new InstanceBuilderTester;
+
+        $this->assertEquals(true, $ib->canAutowiring());
+
+        InstanceBuilderTester::autowiring(false);
+
+        $this->assertEquals(false, $ib->canAutowiring());
+    }
+
     function testGetReflectionClass()
     {
         $ib = new InstanceBuilderTester;
 
         $this->assertInstanceOf(\ReflectionClass::class, $ib->getReflectionClass(Bar::class));
-    }
-
-    function testIsInjectable()
-    {
-        $bi = new InstanceBuilderTester;
-
-        $refClass = $bi->getReflectionClass(Foo::class);
-
-        $this->assertEquals(true, $bi->isInjectable($refClass));
-    }
-
-    function testIsNotInjectable()
-    {
-        $bi = new InstanceBuilderTester;
-
-        $refClass = $bi->getReflectionClass(Bar::class);
-
-        $this->assertEquals(false, $bi->isInjectable($refClass));
     }
 
     function testHasParameters()
@@ -62,18 +56,6 @@ class InstanceBuilderTest extends TestCase
         $refClass = new ReflectionClass(Bar::class);
 
         $this->assertEquals([], $db->getParametersType($refClass));
-    }
-
-    function testHasInjectableAnnotation()
-    {
-        $ib = new InstanceBuilderTester;
-
-        $value = $ib->hasInjectableAnnotation('/**
-         * Class Foo
-         * @Injectable
-         */');
-
-        $this->assertEquals(true, $value);
     }
 
     function testHasDependencies()
@@ -116,44 +98,7 @@ class InstanceBuilderTest extends TestCase
 class InstanceBuilderTester extends InstanceBuilder
 {
     function __construct() {}
-
-    public function hasParameters(\ReflectionClass $refClass)
+    function __clone()
     {
-        return parent::hasParameters($refClass);
-    }
-    
-    public function getParametersType(\ReflectionClass $refClass)
-    {
-        return parent::getParametersType($refClass);
-    }
-    
-    public function resolve($class)
-    {
-        return parent::resolve($class);
-    }
-
-    public function getDependencies(\ReflectionClass $refClass)
-    {
-        return parent::getDependencies($refClass);
-    }
-
-    public function hasDependencies()
-    {
-        return parent::hasDependencies();
-    }
-
-    public function getReflectionClass($class = null)
-    {
-        return parent::getReflectionClass($class);
-    }
-
-    public function isInjectable(\ReflectionClass $refClass)
-    {
-        return parent::isInjectable($refClass);
-    }
-
-    public  function hasInjectableAnnotation($annotations)
-    {
-        return parent::hasInjectableAnnotation($annotations);
     }
 }

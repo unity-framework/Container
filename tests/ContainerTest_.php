@@ -81,10 +81,10 @@ class ContainerTest extends TestCase
 
         $container->register('foo', Foo::class);
 
-        $container->autoWiring(false);
+        $container->autowiring(false);
         $this->assertEquals(Foo::class, $container->get('foo'));
 
-        $container->autoWiring(true);
+        $container->autowiring(true);
         $this->assertInstanceOf(Foo::class, $container->get('foo'));
         $this->assertSame($container->get('foo'), $container->get('foo'));
     }

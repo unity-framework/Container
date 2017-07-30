@@ -5,7 +5,6 @@ namespace Unity\Component\IoC;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 use Psr\Container\ContainerExceptionInterface;
-use Unity\Component\IoC\Exceptions\ContainerException;
 use Unity\Component\IoC\Exceptions\DuplicateResolverNameException;
 use Unity\Component\IoC\Exceptions\NotFoundException;
 use Unity\Helpers\Str;
@@ -27,78 +26,73 @@ class Container implements ContainerInterface
 
     function __construct($autowiring = true)
     {
-        $this->autowiring = $autowiring;
-
-        Str::contains('@', '@');
+        InstanceBuilder::autowiring($autowiring);
     }
 
     /**
-     * Finds an entry of the container by its identifier and returns the resolved entry.
+     * Gets the resolved entry.
      *
-     * @param string $id Identifier of the entry to look for.
+     * @param string $name Identifier of the entry to look for.
      *
-     * @throws NotFoundExceptionInterface No resolver with name **this** was found on the container.
-     * @throws ContainerExceptionInterface Error while trying to build **this** dependencies.
+     * @throws NotFoundExceptionInterface No resolver with name **$name** was found on the container.
+     * @throws ContainerExceptionInterface Error while trying to build **$name** dependencies.
      *
      * @return mixed Entry.
      */
-    function get($id)
+    function get($name)
     {
-        if(isset($this->resolvers[$id])) {
-            $value = $this->resolvers[$id]['entry'];
+        if($this->has($name))
+            return $this->get($name)->instance();
 
-            if (is_callable($value))
-                return $value($this);
-
-            if($this->autowiring && is_string($value))
-                try {
-                if(is_null($this->resolvers[$id]['resolvedEntry']))
-                    $this->resolvers[$id]['resolvedEntry'] = InstanceBuilder::build($value);
-
-                    if (!is_null($this->resolvers[$id]['resolvedEntry']))
-                        return $this->resolvers[$id]['resolvedEntry'];
-                } catch (\Exception $ex) {
-                    throw new ContainerException("An error occurs while trying to build \"${id}\" dependencies");
-                }
-
-                return $value;
-        }
-
-        throw new NotFoundException("No resolver with name \"${id}\" was found on the container.");
+        throw new NotFoundException("No resolver with name \"${name}\" was found on the container.");
     }
 
     /**
      * Returns true if the container can return an entry for the given identifier.
      * Returns false otherwise.
      *
-     * `has($id)` returning true does not mean that `get($id)` will not throw an exception.
-     * It does however mean that `get($id)` will not throw a `NotFoundExceptionInterface`.
+     * `has($name)` returning true does not mean that `get($name)` will not throw an exception.
+     * It does however mean that `get($name)` will not throw a `NotFoundExceptionInterface`.
      *
-     * @param string $id Identifier of the entry to look for.
+     * @param string $name Identifier of the entry to look for.
      *
      * @return bool
      */
-    function has($id)
+    function has($name)
     {
-        return isset($this->resolvers[$id]);
+        return isset($this->resolvers[$name]);
+    }
+
+    /**
+     * Makes a new instance of the resolved entry if
+     * the entry is a callback or an existing class,
+     * otherwise returns the entry if
+     *
+     * @param $name
+     * @return mixed
+     * @throws NotFoundException
+     */
+    function make($name)
+    {
+        if($this->has($name))
+            return $this->get($name)->make();
+
+        throw new NotFoundException("No resolver with name \"${name}\" was found on the container.");
     }
 
     /**
      * Register a resolver
      *
-     * @param string $id
+     * @param string $name
      * @param \Closure|string $entry Identifier of the entry to register.
      * @throws DuplicateResolverNameException
      */
-    function register($id, $entry)
+    function register($name, $entry)
     {
-        if(isset($this->resolvers[$id]))
-            throw new DuplicateResolverNameException("There's already a resolver with name \"${id}\" on the container");
+        if($this->has($name))
+            throw new DuplicateResolverNameException("There's already a resolver with name \"${name}\" on the container");
 
-        $this->resolvers[$id] = [
-            'entry' => $entry,
-            'resolvedEntry' => null
-        ];
+        $this->resolvers[$name] = new Resolver($name, $entry, $this->autowiring);
     }
 
     /**
@@ -106,8 +100,8 @@ class Container implements ContainerInterface
      *
      * @param bool $enabled
      */
-    function autoWiring($enabled = true)
+    function autowiring($enabled)
     {
-        $this->autowiring = $enabled;
+        InstanceBuilder::autowiring($enabled);
     }
 }
