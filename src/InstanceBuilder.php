@@ -258,6 +258,7 @@ class InstanceBuilder
 
                 $type = (string)$parameter->getType();
 
+                /** Its resolves class dependencies recursively */
                 if(class_exists($type)) {
                     return (new InstanceBuilder)->build($type);
                 }
