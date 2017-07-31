@@ -1,17 +1,10 @@
 <?php
 
-namespace Test\Helpers;
+namespace Helpers;
 
-/**
- * Class Foo
- * @Injectable
- */
 class Foo
 {
-    public $bar;
-
     function __construct(Bar $bar)
     {
-        $this->bar = $bar;
     }
 }

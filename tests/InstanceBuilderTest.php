@@ -1,104 +1,351 @@
 <?php
 
+use Helpers\Complex;
+use Helpers\Foo;
+use Helpers\Bar;
+use Helpers\WithConstructorDependencies;
+use Helpers\WithConstructor;
+use Helpers\WithConstructorParameterBind;
+use Helpers\WithConstructorParameters;
+use Helpers\WithoutConstructor;
 use PHPUnit\Framework\TestCase;
+use Unity\Component\IoC\ContainerContract;
 use Unity\Component\IoC\InstanceBuilder;
-use Test\Helpers\Foo;
-use Test\Helpers\Bar;
 
 class InstanceBuilderTest extends TestCase
 {
+    private $instanceBuilder;
+
+    function setUp()
+    {
+        parent::setUp();
+
+        $this->instanceBuilder = new InstanceBuilder;
+    }
+
+    /**
+     * First we check if a parameter exists,
+     * since we don't provided any parameter yet,
+     * `hasParam($param)` should return false.
+     *
+     * Once we `setParams(array $params)`, `hasParam($param)`
+     * should return true
+     *
+     * Since `hasParam($param)` returns true, `getParam($param)`
+     * should only return the value referenced by the `$param`
+     *
+     * We can also `getParams()` without troubles
+     */
+    function testGetSetHasParams()
+    {
+        $this->assertFalse($this->instanceBuilder->hasParam('name'));
+        $this->instanceBuilder->setParams(['name' => 'Lorem Ipsum']);
+        $this->assertTrue($this->instanceBuilder->hasParam('name'));
+
+        $name = $this->instanceBuilder->getParam('name');
+        $this->assertEquals('Lorem Ipsum', $name);
+
+        $params = $this->instanceBuilder->getParams();
+
+        $this->assertTrue(is_array($params));
+        $this->assertNotEmpty($params);
+    }
+
+    /**
+     * First we need to mock a Container instance and set it, so we can test
+     * the `setContainer(ContainerContract $container)`
+     *
+     * Once we set the Container mock, lets test `the getContainer()`,
+     * if the Container mock was set successfully, the `getContainer()`
+     * should return the mocked Container instance without any trouble
+     */
+    function testSetGetContainer()
+    {
+        $container = $this->createMock(ContainerContract::class);
+
+        $this->instanceBuilder->setContainer($container);
+
+        $container = $this->instanceBuilder->getContainer();
+
+        $this->assertInstanceOf(ContainerContract::class, $container);
+    }
+
+    /**
+     * First we need to mock a Container instance and
+     * provide the method `has($name)` of the Container,
+     * the `hasBind($bind)` first check if a bind with
+     * the given name was provided, if yes, its
+     * checks if the requested bind is registered on the Container,
+     * after it, we `setContainer($container)`
+     *
+     * We ready to test
+     *
+     * Since no bind was provided, `hasBind($bind)`
+     * should return false
+     *
+     * After, we set a bind
+     *
+     * Since we have a bind, `hasBind($bind)` should return true
+     *
+     * Ok... We have a bind... Lets get it!!!
+     *
+     * Ok, now, lets get all binds. Of course we have just one
+     */
+    function testGetSetHasParamBinds()
+    {
+        $container = $this->mockContainerForGetSetHasParamBinds();
+
+        $this->instanceBuilder->setContainer($container);
+
+        $this->assertFalse($this->instanceBuilder->hasBind('foo'));
+        $this->instanceBuilder->setBinds(['foo' => 'bar']);
+        $this->assertTrue($this->instanceBuilder->hasBind('foo'));
+
+        $bind = $this->instanceBuilder->getBind('foo');
+        $this->assertEquals('bar', $bind);
+
+        $binds = $this->instanceBuilder->getBinds();
+
+        $this->assertTrue(is_array($binds));
+        $this->assertNotEmpty($binds);
+    }
+
+    /** Should return a ReflectionClass instance */
+    function testReflectClass()
+    {
+        $rc = $this->instanceBuilder->reflectClass(Bar::class);
+
+        $this->assertInstanceOf(ReflectionClass::class, $rc);
+    }
+
+    /**
+     * `canAutowiring()` should return true by default
+     *
+     * `canAutowiring()` should return false if since
+     * `enableAutowiring(false)`
+     *
+     * `canAutowiring()` should return true if
+     * `enableAutowiring(true)`
+     */
     function testAutowiring()
     {
-        $ib = new InstanceBuilderTester;
+        $this->assertEquals(true, $this->instanceBuilder->canAutowiring());
 
-        $this->assertEquals(true, $ib->canAutowiring());
+        $this->instanceBuilder->enableAutowiring(false);
+        $this->assertEquals(false, $this->instanceBuilder->canAutowiring());
 
-        InstanceBuilderTester::autowiring(false);
-
-        $this->assertEquals(false, $ib->canAutowiring());
+        $this->instanceBuilder->enableAutowiring(true);
+        $this->assertEquals(true, $this->instanceBuilder->canAutowiring());
     }
 
-    function testGetReflectionClass()
+    /**
+     * `hasConstructor()` should return true with classes
+     * that has a constructor
+     */
+    function testHasConstructor()
     {
-        $ib = new InstanceBuilderTester;
+        $rc = $this->reflectClassForTest(WithoutConstructor::class);
+        $this->assertFalse($this->instanceBuilder->hasConstructor($rc));
 
-        $this->assertInstanceOf(\ReflectionClass::class, $ib->getReflectionClass(Bar::class));
+        $rc = $this->reflectClassForTest(WithConstructor::class);
+        $this->assertTrue($this->instanceBuilder->hasConstructor($rc));
     }
 
-    function testHasParameters()
+    /**
+     * `hasParametersOnConstructor()` should return true with
+     * classes that has parameters on constructor
+     */
+    function testHasParametersOnConstructor()
     {
-        $db = new InstanceBuilderTester;
+        $rc = $this->reflectClassForTest(WithConstructorParameters::class);
+        $this->assertEquals(true, $this->instanceBuilder->hasParametersOnConstructor($rc));
 
-        $refClass = new ReflectionClass(Foo::class);
-
-        $this->assertEquals(true, $db->hasParameters($refClass));
+        $rc = $this->reflectClassForTest(WithConstructor::class);
+        $this->assertEquals(false, $this->instanceBuilder->hasParametersOnConstructor($rc));
     }
 
-    function testHasNotParameters()
+    /**
+     * `getParametersNeededByTheConstructor()` should return an array
+     * containing all constructor parameters, the
+     * exactly number of parameters and all
+     * parameters should be of type ReflectionParameter
+     */
+    function testGetParametersNeededByTheConstructor()
     {
-        $db = new InstanceBuilderTester;
+        $rc = $this->reflectClassForTest(WithConstructorDependencies::class);
 
-        $refClass = new ReflectionClass(Bar::class);
+        $params = $this->instanceBuilder->getParametersNeededByTheConstructor($rc);
 
-        $this->assertEquals(false, $db->hasParameters($refClass));
+        $this->assertTrue(is_array($params));
+        $this->assertCount(2, $params);
+        $this->assertInstanceOf(ReflectionParameter::class, $params[0]);
+        $this->assertInstanceOf(ReflectionParameter::class, $params[1]);
     }
 
-    function testGetParametersType()
+    /**
+     * `getConstructorParametersValues()` should return an
+     * array of null values for each constructor parameter
+     * if no parameters provided with `setParams(array $params)`,
+     * the exactly number of parameters and all
+     * parameters should be of type ReflectionParameter
+     */
+    function testGetConstructorParametersValuesWithoutProvidedParametersValues()
     {
-        $db = new InstanceBuilderTester;
+        $rc = $this->reflectClassForTest(WithConstructorParameters::class);
 
-        $refClass = new ReflectionClass(Foo::class);
+        $params = $this->instanceBuilder->getConstructorParametersValues($rc);
 
-        $this->assertEquals([
-            Bar::class
-        ], $db->getParametersType($refClass));
-
-        $refClass = new ReflectionClass(Bar::class);
-
-        $this->assertEquals([], $db->getParametersType($refClass));
+        $this->assertTrue(is_array($params));
+        $this->assertCount(2, $params);
+        $this->assertNull($params[0]);
+        $this->assertNull($params[1]);
     }
 
-    function testHasDependencies()
+    /**
+     * `getConstructorParametersValues()` should return an
+     * array of values for each constructor parameter
+     * if parameters provided with `setParams(array $params)`
+     */
+    function testGetConstructorParametersValuesWithProvidedParametersValues()
     {
-        $ib = new InstanceBuilderTester;
+        $this->instanceBuilder->setParams([
+            'param1' => 1,
+            'param2' => 1
+        ]);
 
-        $refClass = $ib->getReflectionClass(Foo::class);
+        $rc = $this->reflectClassForTest(WithConstructorParameters::class);
 
-        /**
-         * This method set the $hasDependency,
-         * so, we need to run it first to check
-         * if the class has or not dependencies
-         */
-        $ib->getDependencies($refClass);
+        $params = $this->instanceBuilder->getConstructorParametersValues($rc);
 
-        $this->assertEquals(true, $ib->hasDependencies());
+        $this->assertTrue(is_array($params));
+        $this->assertCount(2, $params);
+        $this->assertEquals(1, $params[0]);
+        $this->assertEquals(1, $params[1]);
     }
 
-    function testHasNotDependencies()
+    /**
+     * `getConstructorParametersValues()` should return an array containing
+     * all class dependencies to construct the provided class
+     */
+    function testWithConstructorDependencies()
     {
-        $ib = new InstanceBuilderTester;
+        $rc = $this->reflectClassForTest(WithConstructorDependencies::class);
 
-        $refClass = new ReflectionClass(Bar::class);
+        $params = $this->instanceBuilder->getConstructorParametersValues($rc);
 
-        $ib->getDependencies($refClass);
-
-        $this->assertEquals(false, $ib->hasDependencies());
+        $this->assertInstanceOf(WithConstructor::class, $params[0]);
+        $this->assertInstanceOf(WithoutConstructor::class, $params[1]);
     }
 
-    function testBuild()
+    /**
+     * `getConstructorParametersValues()` should return an array containing
+     * all dependencies needed to construct the provided class
+     *
+     * This dependencies are singletons shared between all
+     * classes that binds to it, a bind is provided by a Container
+     * instance, that's why we're using double test (Mock)
+     */
+    function testWithConstructorParameterBind()
     {
-        $ib = new InstanceBuilderTester;
+        $containerMock = $this->mockContainerForTestWithConstructorParameterBind();
 
-        $instance = $ib->build(Foo::class);
+        $this->instanceBuilder->setContainer($containerMock);
+
+        $rc = $this->reflectClassForTest(WithConstructorParameterBind::class);
+
+        $params = $this->instanceBuilder->getConstructorParametersValues($rc);
+
+        $this->assertInstanceOf(WithConstructor::class, $params[0]);
+        $this->assertInstanceOf(WithoutConstructor::class, $params[1]);
+    }
+
+    /**
+     * `createInstance()` should return an instance of the provided class
+     *
+     * Helpers\Bar has not constructor
+     */
+    function testCreateInstance()
+    {
+        $rc = $this->reflectClassForTest(Bar::class);
+
+        $instance = $this->instanceBuilder->createInstance($rc);
+
+        $this->assertInstanceOf(Bar::class, $instance);
+    }
+
+    /**
+     * `createInstanceWithParameters()` should return an instance of the provided class
+     *
+     * Helpers\Foo has a constructor with a dependency,
+     * all dependencies should be resolved and injected
+     */
+    function testCreateInstanceWithParameters()
+    {
+        $rc = $this->reflectClassForTest(Foo::class);
+
+        $instance = $this->instanceBuilder->createInstanceWithParameters($rc);
 
         $this->assertInstanceOf(Foo::class, $instance);
     }
-}
 
-class InstanceBuilderTester extends InstanceBuilder
-{
-    function __construct() {}
-    function __clone()
+    /**
+     * "Reflect class for test"
+     *
+     * @param $class
+     * @return ReflectionClass
+     */
+    function reflectClassForTest($class)
     {
+        return new ReflectionClass($class);
+    }
+
+    /**
+     * Creates a ContainerContract mock for testGetSetHasParamBinds()
+     *
+     * @return PHPUnit_Framework_MockObject_MockObject
+     */
+    function mockContainerForGetSetHasParamBinds()
+    {
+        $container = $this->createMock(ContainerContract::class);
+
+        $container
+            ->expects($this->once())
+            ->method('has')
+            ->willReturn(true);
+
+        $container
+            ->expects($this->once())
+            ->method('get')
+            ->willReturn('bar');
+
+        return $container;
+    }
+
+    /**
+     * Creates a ContainerContract mock for testWithConstructorParameterBind()
+     *
+     * @return PHPUnit_Framework_MockObject_MockObject
+     *
+     */
+    function mockContainerForTestWithConstructorParameterBind()
+    {
+        $containerMock = $this->createMock(ContainerContract::class);
+
+        $containerMock
+            ->expects($this->any())
+            ->method('has')
+            ->willReturn(true);
+
+        $containerMock
+            ->expects($this->any())
+            ->method('get')
+            ->willReturn(new WithConstructor());
+
+        $containerMock
+            ->expects($this->any())
+            ->method('get')
+            ->willReturn(new WithoutConstructor);
+
+        return $containerMock;
     }
 }

@@ -2,14 +2,12 @@
 
 namespace Unity\Component\IoC;
 
-use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 use Psr\Container\ContainerExceptionInterface;
 use Unity\Component\IoC\Exceptions\DuplicateResolverNameException;
 use Unity\Component\IoC\Exceptions\NotFoundException;
-use Unity\Helpers\Str;
 
-class Container implements ContainerInterface
+class Container implements ContainerContract
 {
     /**
      * Registered resolvers collection
@@ -19,20 +17,9 @@ class Container implements ContainerInterface
     protected $resolvers = [];
 
     /**
-     * @var bool $autowiring Set if the Container
-     * can or not inject dependencies on @Injectable classes
-     */
-    protected $autowiring;
-
-    function __construct($autowiring = true)
-    {
-        InstanceBuilder::autowiring($autowiring);
-    }
-
-    /**
      * Gets the resolved entry.
      *
-     * @param string $name Identifier of the entry to look for.
+     * @param string $name Identifier of the resolver to look for.
      *
      * @throws NotFoundExceptionInterface No resolver with name **$name** was found on the container.
      * @throws ContainerExceptionInterface Error while trying to build **$name** dependencies.
@@ -42,7 +29,7 @@ class Container implements ContainerInterface
     function get($name)
     {
         if($this->has($name))
-            return $this->get($name)->instance();
+            return $this->getResolver($name)->getSingleton();
 
         throw new NotFoundException("No resolver with name \"${name}\" was found on the container.");
     }
@@ -75,7 +62,7 @@ class Container implements ContainerInterface
     function make($name)
     {
         if($this->has($name))
-            return $this->get($name)->make();
+            return $this->getResolver($name)->make();
 
         throw new NotFoundException("No resolver with name \"${name}\" was found on the container.");
     }
@@ -86,22 +73,75 @@ class Container implements ContainerInterface
      * @param string $name
      * @param \Closure|string $entry Identifier of the entry to register.
      * @throws DuplicateResolverNameException
+     *
+     * @return Resolver
      */
     function register($name, $entry)
     {
         if($this->has($name))
             throw new DuplicateResolverNameException("There's already a resolver with name \"${name}\" on the container");
 
-        $this->resolvers[$name] = new Resolver($name, $entry, $this->autowiring);
+        return $this->setResolver($name, new Resolver(
+            $name,
+            $entry,
+            $this
+        ));
     }
 
     /**
-     * Defines if autowiring is enabled or not
+     * Unregister a resolver
      *
-     * @param bool $enabled
+     * @param string $name
+     * @throws NotFoundException
      */
-    function autowiring($enabled)
+    function unregister($name)
     {
-        InstanceBuilder::autowiring($enabled);
+        if(!$this->has($name))
+            throw new NotFoundException("No resolver with name \"${name}\" was found on the container.");
+
+        unset($this->resolvers[$name]);
+    }
+
+    /**
+     * Replace an existing resolver
+     *
+     * This method don't replace the already injected instances
+     *
+     * @param string $name
+     * @param \Closure|string $entry Identifier of the entry to register.
+     *
+     * @return Resolver
+     */
+    function replace($name, $entry)
+    {
+        return $this->setResolver($name, new Resolver(
+            $name,
+            $entry,
+            $this
+        ));
+    }
+
+    /**
+     * Gets the resolver.
+     *
+     * @param string $name Identifier of the resolver to get.
+     * @return mixed
+     */
+    function getResolver($name)
+    {
+        return $this->resolvers[$name];
+    }
+
+    /**
+     * Sets the resolver.
+     *
+     * @param string $name Identifier of the resolver to get.
+     * @param Resolver $resolver
+     *
+     * @return Resolver
+     */
+    function setResolver($name, Resolver $resolver)
+    {
+        return $this->resolvers[$name] = $resolver;
     }
 }

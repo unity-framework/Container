@@ -6,25 +6,29 @@ use Unity\Component\IoC\Exceptions\ContainerException;
 
 class Resolver
 {
-    /**
-     * @var string $name Name of this resolver
-     */
+    /** @var string Name of this resolver */
     protected $name;
 
-    /**
-     * @var mixed $entry The entry to be resolver
-     */
+    /** @var Callable|Object|string|mixed The entry to be resolved */
     protected $entry;
 
-    /**
-     * @var mixed $singleton The Singleton instance
-     */
+    /** @var array Contains constructor params */
+    protected $params = [];
+
+    /** @var array Contains others dependencies to bind with */
+    protected $binds = [];
+
+    /** @var mixed The Singleton instance */
     protected $singleton;
 
-    function __construct($name, $entry)
+    /** @var ContainerContract The container instance  */
+    protected $container;
+
+    function __construct($name, $entry, ContainerContract $container)
     {
         $this->name = $name;
         $this->entry = $entry;
+        $this->container = $container;
     }
 
     /**
@@ -108,7 +112,6 @@ class Resolver
      * that return an instance, otherwise, returns
      * the entry
      *
-     * @param $entry
      * @return callable|mixed|null|object|string
      * @throws ContainerException
      */
@@ -118,12 +121,18 @@ class Resolver
         $entry = $this->getEntry();
 
         if (is_callable($entry))
-            $instance = call_user_func($entry, $this);
+            $instance = call_user_func($entry, $this->container);
 
         if(is_string($entry)) {
             try
             {
-                $instance = InstanceBuilder::build($entry);
+                $instanceBuilder = new InstanceBuilder;
+
+                $instanceBuilder->setParams($this->params);
+                $instanceBuilder->setBinds($this->binds);
+                $instanceBuilder->setContainer($this->container);
+
+                $instance = $instanceBuilder->build($entry);
             }
             catch (\Exception $ex)
             {
@@ -135,5 +144,19 @@ class Resolver
             $instance = $entry;
 
         return $instance;
+    }
+
+    function with($params = [])
+    {
+        $this->$params = $params;
+
+        return $this;
+    }
+
+    function bind($to = [])
+    {
+        $this->binds = $to;
+
+        return $this;
     }
 }

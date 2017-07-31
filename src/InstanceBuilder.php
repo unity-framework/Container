@@ -2,40 +2,156 @@
 
 namespace Unity\Component\IoC;
 
+use ReflectionClass;
+use ReflectionMethod;
+use ReflectionParameter;
+
 class InstanceBuilder
 {
-    /**
-     * @var bool $hasDependency
-     */
-    protected $hasDependency;
+    /** @var bool $autowiring */
+    protected $autowiring = true;
+
+    /** @var array $params */
+    protected $params = [];
+
+    /** @var array $binds */
+    protected $binds = [];
+
+    /** @var  ContainerContract $container */
+    protected $container;
 
     /**
-     * @var bool $autowiring
+     * Checks if a parameter exists
+     *
+     * @param $paramName
+     * @return bool
      */
-    protected static $autowiring = true;
+    function hasParam($paramName)
+    {
+        return isset($this->params[$paramName]);
+    }
 
     /**
-     * @var InstanceBuilder The current and top most
-     * instance, used as Singleton access
+     * Gets a parameter
+     *
+     * @param $paramName
+     * @return mixed
      */
-    protected static $instance;
+    function getParam($paramName)
+    {
+        return $this->params[$paramName];
+    }
 
-    private function __clone(){}
-    private function __construct(){}
+    /**
+     * Gets all parameters
+     *
+     * @return array
+     */
+    function getParams()
+    {
+        return $this->params;
+    }
+
+    /**
+     * Sets parameters
+     *
+     * @param $params
+     */
+    function setParams($params)
+    {
+        $this->params = $params;
+    }
+
+    /**
+     * Checks if has a bind
+     *
+     * @param $bindName
+     * @return bool
+     */
+    function hasBind($bindName)
+    {
+        return isset($this->binds[$bindName]) && $this->container->has($bindName);
+    }
+
+    /**
+     * Get a bind
+     *
+     * @param $bindName
+     * @return mixed
+     */
+    function getBind($bindName)
+    {
+        $registerName = $this->binds[$bindName];
+
+        return $this->container->get($registerName);
+    }
+
+    /**
+     * Gets all binds
+     *
+     * @return array
+     */
+    function getBinds()
+    {
+        return $this->binds;
+    }
+
+    /**
+     * Sets binds
+     *
+     * @param $binds
+     */
+    function setBinds($binds)
+    {
+        $this->binds = $binds;
+    }
+
+    /**
+     * Set the container
+     *
+     * Used to get the requested binds singleton
+     *
+     * @param ContainerContract $container
+     */
+    function setContainer(ContainerContract $container)
+    {
+        $this->container = $container;
+    }
+
+    /**
+     * Gets the container
+     *
+     * @return ContainerContract
+     */
+    function getContainer()
+    {
+        return $this->container;
+    }
 
     /**
      * Build a class, instantiate
      * and return it for the Container
      *
-     * @param $class
+     * @param $classname
      * @return object
      */
-    static function build($class)
+    function build($classname)
     {
-        if(is_null(static::$instance))
-            static::$instance = new static;
+        /** Get a ReflectionInstance of the given class name */
+        $reflectedClass = $this->reflectClass($classname);
 
-        return static::$instance->resolve($class);
+        /**
+         * If autowiring is enabled, we check if $reflectedClass hasParametersOnConstructor()
+         * If it's true, then createInstanceWithParametersOnConstructor()
+         */
+        if($this->canAutowiring() && $this->hasParametersOnConstructor($reflectedClass))
+            return $this->createInstanceWithParameters($reflectedClass);
+
+        /**
+        * If we're here, that means the $reflectedClass
+        * has'nt a constructor, so...
+        */
+        return $this->createInstance($reflectedClass);
     }
 
     /**
@@ -44,25 +160,9 @@ class InstanceBuilder
      *
      * @param bool $enabled
      */
-    static function autowiring($enabled = true)
+    function enableAutowiring($enabled)
     {
-        static::$autowiring = $enabled;
-    }
-
-    /**
-     * Start the building of the instantiating
-     *
-     * @param $class
-     * @return object
-     */
-    function resolve($class)
-    {
-        $refClass = $this->getReflectionClass($class);
-
-        if($this->canAutowiring() && $this->hasDependencies())
-            return $refClass->newInstanceArgs($this->getDependencies($refClass));
-        else
-            return $refClass->newInstanceWithoutConstructor();
+        $this->autowiring = $enabled;
     }
 
     /**
@@ -72,40 +172,56 @@ class InstanceBuilder
      */
     function canAutowiring()
     {
-        return static::$autowiring;
+        return $this->autowiring;
     }
 
     /**
-     * Returns an array with all necessary
-     * dependencies to build the instantiating
-     * class
+     * Gets a ReflectionClass instance
      *
-     * @param \ReflectionClass $refClass
-     * @return array
+     * @param $classname
+     * @return ReflectionClass
      */
-    function getDependencies(\ReflectionClass $refClass)
+    function reflectClass($classname)
     {
-        return array_map(function (\ReflectionType $type){
-
-            if(class_exists($type)) {
-
-                if(!$this->hasDependency)
-                        $this->hasDependency = true;
-
-                return (new InstanceBuilder)->resolve($type);
-            }
-
-            return null;
-        }, $this->getParametersType($refClass));
+        return new ReflectionClass($classname);
     }
 
     /**
-     * @return bool Return true if was founded at least one
-     * required dependency for the instantiating class
+     * Gets the constructor
+     *
+     * @param ReflectionClass $rc
+     * @return ReflectionMethod
      */
-    function hasDependencies()
+    function getConstructor(ReflectionClass $rc)
     {
-        return $this->hasDependency;
+        return $rc->getConstructor();
+    }
+
+    /**
+     * Checks if there's a constructor
+     *
+     * @param ReflectionClass $rc
+     * @return bool
+     */
+    function hasConstructor(ReflectionClass $rc)
+    {
+        return !is_null($rc->getConstructor());
+    }
+
+    /**
+     * Check if the instantiating class has
+     * parameters in the constructor
+     *
+     * @param ReflectionClass $rc
+     * @return bool
+     */
+    function hasParametersOnConstructor(ReflectionClass $rc)
+    {
+        if($this->hasConstructor($rc)) {
+            $constructor = $this->getConstructor($rc);
+
+            return $constructor->getNumberOfParameters() > 0;
+        }
     }
 
     /**
@@ -113,48 +229,70 @@ class InstanceBuilder
      * parameters types in the constructor
      * of the instantiating class
      *
-     * @param \ReflectionClass $refClass
+     * @param ReflectionClass $rc
      * @return array
      */
-    function getParametersType(\ReflectionClass $refClass)
+    function getParametersNeededByTheConstructor(ReflectionClass $rc)
     {
-        $params = [];
-
-        if($this->hasParameters($refClass)) {
-            $parameters = $refClass
-                ->getConstructor()
-                ->getParameters();
-
-            foreach ($parameters as $param)
-                $params[] = $param->getType();
-        }
-
-        return $params;
+        return $this->getConstructor($rc)
+                    ->getParameters();
     }
 
     /**
-     * Check if the instantiating class has
-     * parameters in the constructor
+     * Returns an array with all necessary
+     * dependencies to build the instantiating
+     * class
      *
-     * @param \ReflectionClass $refClass
-     * @return bool
+     * @param ReflectionClass $rc
+     * @return array
      */
-    function hasParameters(\ReflectionClass $refClass)
+    function getConstructorParametersValues(ReflectionClass $rc)
     {
-        $constructor = $refClass->getConstructor();
+        return array_map(
+            function (ReflectionParameter $parameter){
 
-        return $constructor && ($constructor->getNumberOfParameters() > 0);
+                $paramName = $parameter->getName();
+
+                if($this->hasBind($paramName))
+                    return $this->getBind($paramName);
+
+                $type = (string)$parameter->getType();
+
+                if(class_exists($type)) {
+                    return (new InstanceBuilder)->build($type);
+                }
+
+                if($this->hasParam($paramName))
+                    return $this->getParam($paramName);
+            },
+            $this->getParametersNeededByTheConstructor($rc)
+        );
     }
 
     /**
-     * Returns a \ReflectionClass instance based
-     * on the provided $class parameter,
+     * Creates a new instance of the reflected class
+     * and put all needed arguments on the constructor
+     * if needed
      *
-     * @param string|null $class
-     * @return \ReflectionClass
+     * @param ReflectionClass $rc
+     * @return object
      */
-    function getReflectionClass($class = null)
+    function createInstanceWithParameters(ReflectionClass $rc)
     {
-        return new \ReflectionClass($class);
+        $constructorParams = $this->getConstructorParametersValues($rc);
+
+        return $rc->newInstanceArgs($constructorParams);
+    }
+
+    /**
+     * Creates a new instance of the reflected class
+     * without a constructor
+     *
+     * @param ReflectionClass $rc
+     * @return object
+     */
+    function createInstance(ReflectionClass $rc)
+    {
+        return $rc->newInstanceWithoutConstructor();
     }
 }

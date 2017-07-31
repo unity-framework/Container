@@ -2,7 +2,7 @@
 
 namespace Helpers;
 
-class Bar
+class WithoutConstructor
 {
 
 }
