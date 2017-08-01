@@ -252,9 +252,16 @@ class InstanceBuilder
     {
         $paramsValues = [];
 
+        /**
+        * For each parameter, get the respective value
+        */
         foreach ($params as $param) {
             $paramName = $param->getName();
 
+            /**
+            * If there's a bind for this param, get,
+            * store it and jump to the next parameter
+            */
             if($this->hasBind($paramName)) {
                 $paramsValues[$paramName] = $this->getBind($paramName);
 
@@ -263,13 +270,21 @@ class InstanceBuilder
 
             $type = (string)$param->getType();
 
+            /**
+            * If there's an explicit param value
+            * for this param, get, store it and jump to the next parameter
+            */
             if($this->hasParam($paramName)) {
                 $paramsValues[$paramName] = $this->getParam($paramName);
 
                 continue;
             }
 
-            /** Its resolves class dependencies recursively */
+            /**
+            * If canAutowiring is enabled and the
+            * required param is a class, get, store it
+            * and jump to the next parameter
+            */
             if($this->canAutowiring() && class_exists($type))
                 $paramsValues[$paramName] = (new InstanceBuilder)->build($type);
         }
@@ -292,8 +307,8 @@ class InstanceBuilder
         /**
          * We need to ensure that all required
          * parameters to construct the requested
-         * class were given, for it, just check if
-         * the $paramValues contains all parameters
+         * class were given, for it, we just check
+         * if the $paramValues contains all parameters
          * names in your keys
          */
         foreach ($params as $param) {
