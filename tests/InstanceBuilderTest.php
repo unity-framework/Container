@@ -25,17 +25,18 @@ class InstanceBuilderTest extends TestCase
     }
 
     /**
-     * First we check if a parameter exists,
+     * We check if a parameter exists,
      * since we don't provided any parameter yet,
-     * `hasParam($param)` should return false.
+     * `hasParam($param)` should return `false`.
      *
      * Once we `setParams(array $params)`, `hasParam($param)`
-     * should return true
+     * should return `true`
      *
-     * Since `hasParam($param)` returns true, `getParam($param)`
+     * Since `hasParam($param)` returns `true`, `getParam($param)`
      * should only return the value referenced by the `$param`
      *
-     * We can also `getParams()` without troubles
+     * If everything is right, `getParams()` should return all
+     * params wtithout any problem
      */
     function testGetSetHasParams()
     {
@@ -53,11 +54,11 @@ class InstanceBuilderTest extends TestCase
     }
 
     /**
-     * First we need to mock a Container instance and set it, so we can test
-     * the `setContainer(ContainerContract $container)`
+     * We need to mock a `ContainerContract` instance and set it,
+     * so we can test the `setContainer(ContainerContract $container)`
      *
-     * Once we set the Container mock, lets test `the getContainer()`,
-     * if the Container mock was set successfully, the `getContainer()`
+     * Once we set the `Container` mock, lets test the `getContainer()`,
+     * if the `Container` mock was set successfully, the `getContainer()`
      * should return the mocked Container instance without any trouble
      */
     function testSetGetContainer()
@@ -72,25 +73,25 @@ class InstanceBuilderTest extends TestCase
     }
 
     /**
-     * First we need to mock a Container instance and
-     * provide the method `has($name)` of the Container,
-     * the `hasBind($bind)` first check if a bind with
+     * We need to mock a `ContainerContract` instance and
+     * provide the method `has($bind)` of the `Container`.
+     * The `hasBind($bind)` first checks if a bind with
      * the given name was provided, if yes, its
-     * checks if the requested bind is registered on the Container,
-     * after it, we `setContainer($container)`
+     * checks if the requested bind is registered on the
+     * `ContainerContract`,after it, we `setContainer($container)`
      *
-     * We ready to test
+     * We're ready to test
      *
      * Since no bind was provided, `hasBind($bind)`
-     * should return false
+     * should return `false`
      *
-     * After, we set a bind
+     * After it, we set a bind
      *
-     * Since we have a bind, `hasBind($bind)` should return true
+     * Since we have a bind, `hasBind($bind)` should return `true`
      *
      * Ok... We have a bind... Lets get it!!!
      *
-     * Ok, now, lets get all binds. Of course we have just one
+     * Ok, now, lets get all binds. Of course we just have one
      */
     function testGetSetHasParamBinds()
     {
@@ -111,7 +112,7 @@ class InstanceBuilderTest extends TestCase
         $this->assertNotEmpty($binds);
     }
 
-    /** Should return a ReflectionClass instance */
+    /** Should return a `ReflectionClass` instance */
     function testReflectClass()
     {
         $rc = $this->instanceBuilder->reflectClass(Bar::class);
@@ -120,12 +121,12 @@ class InstanceBuilderTest extends TestCase
     }
 
     /**
-     * `canAutowiring()` should return true by default
+     * `canAutowiring()` should return `true` by default
      *
-     * `canAutowiring()` should return false if since
+     * `canAutowiring()` should return `false` if since
      * `enableAutowiring(false)`
      *
-     * `canAutowiring()` should return true if
+     * `canAutowiring()` should return `true` if
      * `enableAutowiring(true)`
      */
     function testAutowiring()
@@ -140,7 +141,7 @@ class InstanceBuilderTest extends TestCase
     }
 
     /**
-     * `hasConstructor()` should return true with classes
+     * `hasConstructor()` should return `true` with classes
      * that has a constructor
      */
     function testHasConstructor()
@@ -153,7 +154,7 @@ class InstanceBuilderTest extends TestCase
     }
 
     /**
-     * `hasParametersOnConstructor()` should return true with
+     * `hasParametersOnConstructor()` should return `true` with
      * classes that has parameters on constructor
      */
     function testHasParametersOnConstructor()
@@ -166,16 +167,16 @@ class InstanceBuilderTest extends TestCase
     }
 
     /**
-     * `getParametersNeededByTheConstructor()` should return an array
-     * containing all constructor parameters, the
-     * exactly number of parameters and all
-     * parameters should be of type ReflectionParameter
+     * `getParametersNeededByTheConstructor()` should return
+     * an `array` containing all constructor parameters, the
+     * exactly number of parameters required and all parameters
+     * should be of type ReflectionParameter
      */
-    function testGetParametersNeededByTheConstructor()
+    function testgetParametersRequiredByTheConstructor()
     {
         $rc = $this->reflectClassForTest(WithConstructorDependencies::class);
 
-        $params = $this->instanceBuilder->getParametersNeededByTheConstructor($rc);
+        $params = $this->instanceBuilder->getParametersRequiredByTheConstructor($rc);
 
         $this->assertTrue(is_array($params));
         $this->assertCount(2, $params);
@@ -185,7 +186,7 @@ class InstanceBuilderTest extends TestCase
 
     /**
      * `getConstructorParametersValues()` should return an empty
-     * array if no parameters provided using `setParams(array $params)`
+     * `array` if no parameters provided using `setParams(array $params)`
      */
     function testGetConstructorParametersValuesWithoutProvideParametersValues()
     {
@@ -200,7 +201,7 @@ class InstanceBuilderTest extends TestCase
 
     /**
      * `getConstructorParametersValues()` should return an
-     * array of values for each constructor parameter
+     * `array` of values for each constructor required parameter
      * if parameters provided with `setParams(array $params)`
      */
     function testGetConstructorParametersValuesWithProvidedParametersValues()
@@ -222,7 +223,7 @@ class InstanceBuilderTest extends TestCase
     }
 
     /**
-     * `getConstructorParametersValues()` should return an array containing
+     * `getConstructorParametersValues()` should return an `array` containing
      * all class dependencies to construct the provided class
      */
     function testWithConstructorDependencies()
@@ -237,11 +238,11 @@ class InstanceBuilderTest extends TestCase
     }
 
     /**
-     * `getConstructorParametersValues()` should return an array containing
-     * all dependencies needed to construct the provided class
+     * `getConstructorParametersValues()` should return an `array` containing
+     * all dependencies required to construct the provided class
      *
-     * This dependencies are singletons shared between all
-     * classes that binds to it, a bind is provided by a Container
+     * These dependencies are singletons shared across all
+     * classes that binds to it, a bind is provided by a `ContainerContract`
      * instance, that's why we're using double test (Mock)
      */
     function testWithConstructorParameterBind()
@@ -261,13 +262,13 @@ class InstanceBuilderTest extends TestCase
 
     /**
      * `ensureNoMissingConstructorParameter()` should return
-     * does nothing at the first test cause we provide the
-     * parameters needed to construct the given class, that's why we
-     * make sure the output is `null`
+     * nothing at the first test 'cause we provide the
+     * parameters required to build the given class, that's why we
+     * ensure the output is `null`
      *
      * `ensureNoMissingConstructorParameter()` should throw an exception
-     * on the second test 'cause we did'nt provide the parameters needed
-     * to construct the given class
+     * on the second test 'cause we did'nt provide the parameters required
+     * to build the given class
      */
     function testEnsureNoMissingParameter()
     {
@@ -287,7 +288,7 @@ class InstanceBuilderTest extends TestCase
     /**
      * `createInstance()` should return an instance of the provided class
      *
-     * Helpers\Bar has not constructor
+     * Helpers\Bar has'nt a constructor
      */
     function testCreateInstance()
     {

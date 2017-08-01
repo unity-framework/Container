@@ -235,7 +235,7 @@ class InstanceBuilder
      * @param ReflectionClass $rc
      * @return array
      */
-    function getParametersNeededByTheConstructor(ReflectionClass $rc)
+    function getParametersRequiredByTheConstructor(ReflectionClass $rc)
     {
         return $this->getConstructor($rc)
                     ->getParameters();
@@ -330,7 +330,7 @@ class InstanceBuilder
      */
     function createInstanceWithParameters(ReflectionClass $rc)
     {
-        $params = $this->getParametersNeededByTheConstructor($rc);
+        $params = $this->getParametersRequiredByTheConstructor($rc);
         $paramsValues = $this->getConstructorParametersValues($params);
 
         $this->ensureNoMissingConstructorParameter($params, $paramsValues, $rc);
