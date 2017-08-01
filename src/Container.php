@@ -16,6 +16,9 @@ class Container implements ContainerContract
      */
     protected $resolvers = [];
 
+    /** @var bool $autowiring */
+    protected $autowiring;
+
     /**
      * Gets the resolved entry.
      *
@@ -140,8 +143,13 @@ class Container implements ContainerContract
         return $this->resolvers[$name] = $resolver;
     }
 
-    function enableAutowiring()
+    function enableAutowiring($enable)
     {
+        $this->autowiring = $enable;
+    }
 
+    function canAutowiring()
+    {
+        return $this->autowiring;
     }
 }

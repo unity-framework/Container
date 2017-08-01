@@ -123,11 +123,8 @@ class InstanceBuilderTest extends TestCase
     /**
      * `canAutowiring()` should return `true` by default
      *
-     * `canAutowiring()` should return `false` if since
+     * `canAutowiring()` should return `false` if
      * `enableAutowiring(false)`
-     *
-     * `canAutowiring()` should return `true` if
-     * `enableAutowiring(true)`
      */
     function testAutowiring()
     {
@@ -135,9 +132,6 @@ class InstanceBuilderTest extends TestCase
 
         $this->instanceBuilder->enableAutowiring(false);
         $this->assertEquals(false, $this->instanceBuilder->canAutowiring());
-
-        $this->instanceBuilder->enableAutowiring(true);
-        $this->assertEquals(true, $this->instanceBuilder->canAutowiring());
     }
 
     /**
