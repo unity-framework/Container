@@ -2,9 +2,10 @@
 
 namespace Unity\Component\IoC\Exceptions;
 
+use Exception;
 use Throwable;
 
-class DuplicateResolverNameException extends \Exception implements DuplicateResolverNameExceptionInterface
+class MissingConstructorArgumentException extends Exception implements MissingConstructorArgumentExceptionInterface
 {
     public function __construct($message = "", $code = 0, Throwable $previous = null)
     {

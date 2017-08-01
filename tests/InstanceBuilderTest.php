@@ -10,6 +10,7 @@ use Helpers\WithConstructorParameters;
 use Helpers\WithoutConstructor;
 use PHPUnit\Framework\TestCase;
 use Unity\Component\IoC\ContainerContract;
+use Unity\Component\IoC\Exceptions\MissingConstructorArgumentException;
 use Unity\Component\IoC\InstanceBuilder;
 
 class InstanceBuilderTest extends TestCase
@@ -183,22 +184,18 @@ class InstanceBuilderTest extends TestCase
     }
 
     /**
-     * `getConstructorParametersValues()` should return an
-     * array of null values for each constructor parameter
-     * if no parameters provided with `setParams(array $params)`,
-     * the exactly number of parameters and all
-     * parameters should be of type ReflectionParameter
+     * `getConstructorParametersValues()` should return an empty
+     * array if no parameters provided using `setParams(array $params)`
      */
-    function testGetConstructorParametersValuesWithoutProvidedParametersValues()
+    function testGetConstructorParametersValuesWithoutProvideParametersValues()
     {
         $rc = $this->reflectClassForTest(WithConstructorParameters::class);
 
-        $params = $this->instanceBuilder->getConstructorParametersValues($rc);
+        $params = $rc->getConstructor()->getParameters();
+        $paramsValues = $this->instanceBuilder->getConstructorParametersValues($params);
 
-        $this->assertTrue(is_array($params));
-        $this->assertCount(2, $params);
-        $this->assertNull($params[0]);
-        $this->assertNull($params[1]);
+        $this->assertTrue(is_array($paramsValues));
+        $this->isEmpty($paramsValues);
     }
 
     /**
@@ -215,12 +212,13 @@ class InstanceBuilderTest extends TestCase
 
         $rc = $this->reflectClassForTest(WithConstructorParameters::class);
 
-        $params = $this->instanceBuilder->getConstructorParametersValues($rc);
+        $params = $rc->getConstructor()->getParameters();
+        $paramsValues = $this->instanceBuilder->getConstructorParametersValues($params);
 
-        $this->assertTrue(is_array($params));
-        $this->assertCount(2, $params);
-        $this->assertEquals(1, $params[0]);
-        $this->assertEquals(1, $params[1]);
+        $this->assertTrue(is_array($paramsValues));
+        $this->assertCount(2, $paramsValues);
+        $this->assertEquals(1, $paramsValues['param1']);
+        $this->assertEquals(1, $paramsValues['param2']);
     }
 
     /**
@@ -231,10 +229,11 @@ class InstanceBuilderTest extends TestCase
     {
         $rc = $this->reflectClassForTest(WithConstructorDependencies::class);
 
-        $params = $this->instanceBuilder->getConstructorParametersValues($rc);
+        $params = $rc->getConstructor()->getParameters();
+        $paramsValues = $this->instanceBuilder->getConstructorParametersValues($params);
 
-        $this->assertInstanceOf(WithConstructor::class, $params[0]);
-        $this->assertInstanceOf(WithoutConstructor::class, $params[1]);
+        $this->assertInstanceOf(WithConstructor::class, $paramsValues['withConstructor']);
+        $this->assertInstanceOf(WithoutConstructor::class, $paramsValues['withoutConstructor']);
     }
 
     /**
@@ -253,10 +252,36 @@ class InstanceBuilderTest extends TestCase
 
         $rc = $this->reflectClassForTest(WithConstructorParameterBind::class);
 
-        $params = $this->instanceBuilder->getConstructorParametersValues($rc);
+        $params = $rc->getConstructor()->getParameters();
+        $paramsValues = $this->instanceBuilder->getConstructorParametersValues($params);
 
-        $this->assertInstanceOf(WithConstructor::class, $params[0]);
-        $this->assertInstanceOf(WithoutConstructor::class, $params[1]);
+        $this->assertInstanceOf(WithConstructor::class, $paramsValues['withConstructor']);
+        $this->assertInstanceOf(WithoutConstructor::class, $paramsValues['withoutConstructor']);
+    }
+
+    /**
+     * `ensureNoMissingConstructorParameter()` should return
+     * does nothing at the first test cause we provide the
+     * parameters needed to construct the given class, that's why we
+     * make sure the output is `null`
+     *
+     * `ensureNoMissingConstructorParameter()` should throw an exception
+     * on the second test 'cause we did'nt provide the parameters needed
+     * to construct the given class
+     */
+    function testEnsureNoMissingParameter()
+    {
+        $this->expectException(MissingConstructorArgumentException::class);
+
+        $rc = $this->reflectClassForTest(WithConstructorParameters::class);
+        $params = $rc->getConstructor()->getParameters();
+
+        $paramValues = ['param1' => 1, 'param2' => 2];
+
+        $instance = $this->instanceBuilder->ensureNoMissingConstructorParameter($params, $paramValues, $rc);
+        $this->assertNull($instance);
+
+        $this->instanceBuilder->ensureNoMissingConstructorParameter($params, [], $rc);
     }
 
     /**

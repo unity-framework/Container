@@ -5,6 +5,7 @@ namespace Unity\Component\IoC;
 use ReflectionClass;
 use ReflectionMethod;
 use ReflectionParameter;
+use Unity\Component\IoC\Exceptions\MissingConstructorArgumentException;
 
 class InstanceBuilder
 {
@@ -132,19 +133,19 @@ class InstanceBuilder
      * Build a class, instantiate
      * and return it for the Container
      *
-     * @param $classname
+     * @param $className
      * @return object
      */
-    function build($classname)
+    function build($className)
     {
         /** Get a ReflectionInstance of the given class name */
-        $reflectedClass = $this->reflectClass($classname);
+        $reflectedClass = $this->reflectClass($className);
 
         /**
          * If autowiring is enabled, we check if $reflectedClass hasParametersOnConstructor()
          * If it's true, then createInstanceWithParametersOnConstructor()
          */
-        if($this->canAutowiring() && $this->hasParametersOnConstructor($reflectedClass))
+        if($this->hasParametersOnConstructor($reflectedClass))
             return $this->createInstanceWithParameters($reflectedClass);
 
         /**
@@ -178,12 +179,12 @@ class InstanceBuilder
     /**
      * Gets a ReflectionClass instance
      *
-     * @param $classname
+     * @param $className
      * @return ReflectionClass
      */
-    function reflectClass($classname)
+    function reflectClass($className)
     {
-        return new ReflectionClass($classname);
+        return new ReflectionClass($className);
     }
 
     /**
@@ -243,31 +244,64 @@ class InstanceBuilder
      * dependencies to build the instantiating
      * class
      *
-     * @param ReflectionClass $rc
+     * @param $params
      * @return array
+     * @internal param ReflectionClass $rc
      */
-    function getConstructorParametersValues(ReflectionClass $rc)
+    function getConstructorParametersValues($params)
     {
-        return array_map(
-            function (ReflectionParameter $parameter){
+        $paramsValues = [];
 
-                $paramName = $parameter->getName();
+        foreach ($params as $param) {
+            $paramName = $param->getName();
 
-                if($this->hasBind($paramName))
-                    return $this->getBind($paramName);
+            if($this->hasBind($paramName)) {
+                $paramsValues[$paramName] = $this->getBind($paramName);
 
-                $type = (string)$parameter->getType();
+                continue;
+            }
 
-                /** Its resolves class dependencies recursively */
-                if(class_exists($type)) {
-                    return (new InstanceBuilder)->build($type);
-                }
+            $type = (string)$param->getType();
 
-                if($this->hasParam($paramName))
-                    return $this->getParam($paramName);
-            },
-            $this->getParametersNeededByTheConstructor($rc)
-        );
+            if($this->hasParam($paramName)) {
+                $paramsValues[$paramName] = $this->getParam($paramName);
+
+                continue;
+            }
+
+            /** Its resolves class dependencies recursively */
+            if($this->canAutowiring() && class_exists($type))
+                $paramsValues[$paramName] = (new InstanceBuilder)->build($type);
+        }
+
+        return $paramsValues;
+    }
+
+    /**
+     * Make sure no needed parameters is missing
+     *
+     * @param $params
+     * @param $paramValues
+     * @param $rc
+     * @throws MissingConstructorArgumentException
+     */
+    function ensureNoMissingConstructorParameter($params, $paramValues, $rc)
+    {
+        $rcName = $rc->getName();
+
+        /**
+         * We need to ensure that all required
+         * parameters to construct the requested
+         * class were given, for it, just check if
+         * the $paramValues contains all parameters
+         * names in your keys
+         */
+        foreach ($params as $param) {
+            $paramName = $param->getName();
+
+            if(!array_key_exists($paramName, $paramValues))
+                throw new MissingConstructorArgumentException("Missing argument \${$paramName} for {$rcName}::__construct()");
+        }
     }
 
     /**
@@ -280,9 +314,12 @@ class InstanceBuilder
      */
     function createInstanceWithParameters(ReflectionClass $rc)
     {
-        $constructorParams = $this->getConstructorParametersValues($rc);
+        $params = $this->getParametersNeededByTheConstructor($rc);
+        $paramsValues = $this->getConstructorParametersValues($params);
 
-        return $rc->newInstanceArgs($constructorParams);
+        $this->ensureNoMissingConstructorParameter($params, $paramsValues, $rc);
+
+        return $rc->newInstanceArgs($paramsValues);
     }
 
     /**
