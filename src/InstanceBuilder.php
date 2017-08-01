@@ -64,7 +64,7 @@ class InstanceBuilder
     }
 
     /**
-     * Checks if has a bind
+     * Checks if a bind exists
      *
      * @param $bindName
      * @return bool
