@@ -110,7 +110,7 @@ class InstanceBuilder
     /**
      * Sets the container
      *
-     * Used to get the requested binds singleton
+     * Used to get the requested bind singleton
      *
      * @param ContainerContract $container
      */
@@ -130,8 +130,8 @@ class InstanceBuilder
     }
 
     /**
-     * Build a class, instantiate
-     * and return it for the Container
+     * Builds a class, instantiate
+     * and returns it
      *
      * @param $className
      * @return object
@@ -139,25 +139,25 @@ class InstanceBuilder
     function build($className)
     {
         /** Get a ReflectionInstance of the given class name */
-        $reflectedClass = $this->reflectClass($className);
+        $rc = $this->reflectClass($className);
 
         /**
-         * If autowiring is enabled, we check if $reflectedClass hasParametersOnConstructor()
-         * If it's true, then createInstanceWithParametersOnConstructor()
+         * We need to check if $rc `hasParametersOnConstructor()`,
+         * if it's true, then `createInstanceWithParametersOnConstructor()`
          */
-        if($this->hasParametersOnConstructor($reflectedClass))
-            return $this->createInstanceWithParameters($reflectedClass);
+        if($this->hasParametersOnConstructor($rc))
+            return $this->createInstanceWithParameters($rc);
 
         /**
-        * If we're here, that means the $reflectedClass
-        * has'nt a constructor, so...
+        * If we're here, that means that $rc
+        * has'nt a constructor, so, just...
         */
-        return $this->createInstance($reflectedClass);
+        return $this->createInstance($rc);
     }
 
     /**
      * Sets if InstanceBuilder can search for
-     * dependencies in the entry and try resolve them
+     * dependencies in the entry and resolve them
      *
      * @param bool $enabled
      */
@@ -188,7 +188,7 @@ class InstanceBuilder
     }
 
     /**
-     * Gets the constructor
+     * Gets the constructor of the required class
      *
      * @param ReflectionClass $rc
      * @return ReflectionMethod
@@ -199,7 +199,7 @@ class InstanceBuilder
     }
 
     /**
-     * Checks if there's a constructor
+     * Checks if the required class has constructor
      *
      * @param ReflectionClass $rc
      * @return bool
@@ -210,7 +210,7 @@ class InstanceBuilder
     }
 
     /**
-     * Check if the instantiating class has
+     * Checks if the building class has
      * parameters in the constructor
      *
      * @param ReflectionClass $rc
@@ -223,12 +223,14 @@ class InstanceBuilder
 
             return $constructor->getNumberOfParameters() > 0;
         }
+
+        return false;
     }
 
     /**
-     * Returns an array with all respective
-     * parameters types in the constructor
-     * of the instantiating class
+     * Returns an array with all parameters
+     * types of each parameter on the building
+     * class constructor
      *
      * @param ReflectionClass $rc
      * @return array
@@ -241,8 +243,7 @@ class InstanceBuilder
 
     /**
      * Returns an array with all necessary
-     * dependencies to build the instantiating
-     * class
+     * parameters to build the building class
      *
      * @param $params
      * @return array
@@ -268,8 +269,6 @@ class InstanceBuilder
                 continue;
             }
 
-            $type = (string)$param->getType();
-
             /**
             * If there's an explicit param value
             * for this param, get, store it and jump to the next parameter
@@ -280,10 +279,11 @@ class InstanceBuilder
                 continue;
             }
 
+            $type = (string)$param->getType();
+
             /**
             * If canAutowiring is enabled and the
-            * required param is a class, get, store it
-            * and jump to the next parameter
+            * required param is a class, get and store it
             */
             if($this->canAutowiring() && class_exists($type))
                 $paramsValues[$paramName] = (new InstanceBuilder)->build($type);
@@ -293,7 +293,7 @@ class InstanceBuilder
     }
 
     /**
-     * Make sure no needed parameters is missing
+     * Ensure that no needed parameter is missing
      *
      * @param $params
      * @param $paramValues
@@ -306,15 +306,16 @@ class InstanceBuilder
 
         /**
          * We need to ensure that all required
-         * parameters to construct the requested
-         * class were given, for it, we just check
+         * parameters to construct the building
+         * class were given, for it, we must check
          * if the $paramValues contains all parameters
-         * names in your keys
+         * names in your keys, except the optional parameters
          */
         foreach ($params as $param) {
             $paramName = $param->getName();
 
-            if(!array_key_exists($paramName, $paramValues))
+            /** Optional parameters should be ignored */
+            if(!$param->isOptional() && !array_key_exists($paramName, $paramValues))
                 throw new MissingConstructorArgumentException("Missing argument \${$paramName} for {$rcName}::__construct()");
         }
     }
