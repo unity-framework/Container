@@ -2,6 +2,7 @@
 
 namespace Unity\Component\IoC;
 
+use Exception;
 use Unity\Component\IoC\Exceptions\ContainerException;
 
 class Resolver
@@ -134,7 +135,7 @@ class Resolver
 
                 $instance = $instanceBuilder->build($entry);
             }
-            catch (\Exception $ex)
+            catch (Exception $ex)
             {
                 throw new ContainerException("An error occurs while trying to build \" {$this->name} \" dependencies.\nError: " . $ex->getMessage(), $ex->getCode());
             }
@@ -146,14 +147,28 @@ class Resolver
         return $instance;
     }
 
-    function with($params = [])
+    /**
+     * Parameters to be given to the constructor
+     * on build time
+     *
+     * @param array $params
+     * @return $this
+     */
+    function with($params)
     {
-        $this->$params = $params;
+        $this->params = $params;
 
         return $this;
     }
 
-    function bind($to = [])
+    /**
+     * Parameters to bind with registered resolver on
+     * the `ContainerInterface` instance
+     *
+     * @param array $to
+     * @return $this
+     */
+    function bind($to)
     {
         $this->binds = $to;
 

@@ -172,7 +172,7 @@ class InstanceBuilderTest extends TestCase
      * exactly number of parameters required and all parameters
      * should be of type ReflectionParameter
      */
-    function testgetParametersRequiredByTheConstructor()
+    function testGetParametersRequiredByTheConstructor()
     {
         $rc = $this->reflectClassForTest(WithConstructorDependencies::class);
 

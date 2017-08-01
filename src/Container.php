@@ -10,7 +10,7 @@ use Unity\Component\IoC\Exceptions\NotFoundException;
 class Container implements ContainerContract
 {
     /**
-     * Registered resolvers collection
+     * Registered resolvers collection.
      *
      * @var array
      */
@@ -21,8 +21,8 @@ class Container implements ContainerContract
      *
      * @param string $name Identifier of the resolver to look for.
      *
-     * @throws NotFoundExceptionInterface No resolver with name **$name** was found on the container.
-     * @throws ContainerExceptionInterface Error while trying to build **$name** dependencies.
+     * @throws NotFoundExceptionInterface
+     * @throws ContainerExceptionInterface
      *
      * @return mixed Entry.
      */
@@ -35,8 +35,7 @@ class Container implements ContainerContract
     }
 
     /**
-     * Returns true if the container can return an entry for the given identifier.
-     * Returns false otherwise.
+     * Returns `true` if the container can return an entry for the given identifier.
      *
      * `has($name)` returning true does not mean that `get($name)` will not throw an exception.
      * It does however mean that `get($name)` will not throw a `NotFoundExceptionInterface`.
@@ -52,8 +51,8 @@ class Container implements ContainerContract
 
     /**
      * Makes a new instance of the resolved entry if
-     * the entry is a callback or an existing class,
-     * otherwise returns the entry if
+     * the entry is a `Callable` or an existing class,
+     * otherwise returns the entry
      *
      * @param $name
      * @return mixed
@@ -105,7 +104,7 @@ class Container implements ContainerContract
     /**
      * Replace an existing resolver
      *
-     * This method don't replace the already injected instances
+     * This method don't replace instances already injected
      *
      * @param string $name
      * @param \Closure|string $entry Identifier of the entry to register.
@@ -143,5 +142,10 @@ class Container implements ContainerContract
     function setResolver($name, Resolver $resolver)
     {
         return $this->resolvers[$name] = $resolver;
+    }
+
+    function enableAutowiring()
+    {
+        
     }
 }
