@@ -80,11 +80,7 @@ class Container implements ContainerContract
         if($this->has($name))
             throw new DuplicateResolverNameException("There's already a resolver with name \"${name}\" on the container");
 
-        return $this->setResolver($name, new Resolver(
-            $name,
-            $entry,
-            $this
-        ));
+        return $this->setResolver($name, ResolverFactory::Make($name, $entry, $this));
     }
 
     /**
@@ -139,13 +135,13 @@ class Container implements ContainerContract
      *
      * @return Resolver
      */
-    function setResolver($name, Resolver $resolver)
+    function setResolver($name, ResolverInterface $resolver)
     {
         return $this->resolvers[$name] = $resolver;
     }
 
     function enableAutowiring()
     {
-        
+
     }
 }
