@@ -75,7 +75,7 @@ class InstanceBuilder
     }
 
     /**
-     * Get a bind
+     * Gets a bind
      *
      * @param $bindName
      * @return mixed
@@ -108,7 +108,7 @@ class InstanceBuilder
     }
 
     /**
-     * Set the container
+     * Sets the container
      *
      * Used to get the requested binds singleton
      *
