@@ -5,7 +5,7 @@ namespace Unity\Component\IoC;
 use Exception;
 use Unity\Component\IoC\Exceptions\ContainerException;
 
-class Resolver
+class Resolver implements ResolverInterface
 {
     /** @var string Name of this resolver */
     protected $name;
