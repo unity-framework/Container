@@ -4,16 +4,16 @@ namespace Unity\Component\Container\Exceptions;
 
 use Exception;
 use Throwable;
-use Psr\Container\NotFoundExceptionInterface;
+use Unity\Component\Container\Contracts\IDuplicateIdException;
 
 /**
- * Class NotFoundException.
+ * Class DuplicateDependencyNameException.
  *
  * @package Unity\Component\Container\Exceptions
  *
  * @author Eleandro Duzentos <eleandro@inbox.ru>
  */
-class NotFoundException extends Exception implements NotFoundExceptionInterface
+class DuplicateIdException extends Exception implements IDuplicateIdException
 {
     public function __construct($message = "", $code = 0, Throwable $previous = null)
     {

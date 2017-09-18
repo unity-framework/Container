@@ -1,11 +1,19 @@
 <?php
 
-namespace Unity\Component\IoC\Exceptions;
+namespace Unity\Component\Container\Exceptions;
 
 use Exception;
 use Throwable;
+use Unity\Component\Container\Contracts\IMissingConstructorArgumentException;
 
-class MissingConstructorArgumentException extends Exception implements MissingConstructorArgumentExceptionInterface
+/**
+ * Class MissingConstructorArgumentException.
+ *
+ * @package Unity\Component\Container\Exceptions
+ *
+ * @author Eleandro Duzentos <eleandro@inbox.ru>
+ */
+class MissingConstructorArgumentException extends Exception implements IMissingConstructorArgumentException
 {
     public function __construct($message = "", $code = 0, Throwable $previous = null)
     {
