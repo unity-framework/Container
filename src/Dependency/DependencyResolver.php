@@ -124,9 +124,9 @@ class DependencyResolver implements IDependencyResolver
         if(is_string($entry) && class_exists($entry)) {
             try {
                 return (new DependencyBuilder(
+                    $this->container,
                     $params,
-                    $this->binds,
-                    $this->container
+                    $this->binds
                 ))->build($entry);
             } catch (Exception $ex) {
                 throw new ContainerException("An error occurs while trying to build \" {$this->id} \".\nError: " . $ex->getMessage(), $ex->getCode());
