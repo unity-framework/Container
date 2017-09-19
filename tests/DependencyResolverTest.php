@@ -112,6 +112,11 @@ class DependencyResolverTest extends TestCase
     {
         $containerMock = $this->createMock(IUnityContainer::class);
 
+        $containerMock
+            ->expects($this->any())
+            ->method('canAutowiring')
+            ->willReturn(true);
+
         return new DependencyResolver(self::ID, $entry ?? Bar::class, $containerMock);
     }
 }
