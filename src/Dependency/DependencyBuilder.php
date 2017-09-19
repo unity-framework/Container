@@ -12,7 +12,6 @@ use Unity\Component\Container\Exceptions\MissingConstructorArgumentException;
  *
  * Builds dependencies using Reflection.
  *
- * @package Unity\Component\Container\Dependency
  *
  * @author Eleandro Duzentos <eleandro@inbox.ru>
  */
@@ -30,7 +29,7 @@ class DependencyBuilder
      * @param array           $params
      * @param array           $binds
      */
-    function __construct(IUnityContainer $container, $params = null, $binds = null)
+    public function __construct(IUnityContainer $container, $params = null, $binds = null)
     {
         $this->container = $container;
         $this->params = $params;
@@ -44,7 +43,7 @@ class DependencyBuilder
      *
      * @return bool
      */
-    function hasParam($parameterName)
+    public function hasParam($parameterName)
     {
         return isset($this->params[$parameterName]);
     }
@@ -56,7 +55,7 @@ class DependencyBuilder
      *
      * @return mixed
      */
-    function getParam($parameterName)
+    public function getParam($parameterName)
     {
         return $this->params[$parameterName];
     }
@@ -66,7 +65,7 @@ class DependencyBuilder
      *
      * @return array
      */
-    function getParams()
+    public function getParams()
     {
         return $this->params;
     }
@@ -78,7 +77,7 @@ class DependencyBuilder
      *
      * @return bool
      */
-    function hasBind($bindName)
+    public function hasBind($bindName)
     {
         return isset($this->binds[$bindName]) && $this->container->has($bindName);
     }
@@ -90,7 +89,7 @@ class DependencyBuilder
      *
      * @return mixed
      */
-    function getBind($bindName)
+    public function getBind($bindName)
     {
         $registerName = $this->binds[$bindName];
 
@@ -102,7 +101,7 @@ class DependencyBuilder
      *
      * @return array
      */
-    function getBinds()
+    public function getBinds()
     {
         return $this->binds;
     }
@@ -112,7 +111,7 @@ class DependencyBuilder
      *
      * @return IUnityContainer
      */
-    function getContainer()
+    public function getContainer()
     {
         return $this->container;
     }
@@ -124,7 +123,7 @@ class DependencyBuilder
      *
      * @return object
      */
-    function build($className)
+    public function build($className)
     {
         /* Get a ReflectionInstance of the given class name */
         $rc = $this->reflectClass($className);
@@ -150,7 +149,7 @@ class DependencyBuilder
      *
      * @return ReflectionClass
      */
-    function reflectClass($class)
+    public function reflectClass($class)
     {
         return new ReflectionClass($class);
     }
@@ -162,7 +161,7 @@ class DependencyBuilder
      *
      * @return ReflectionMethod
      */
-    function getConstructor(ReflectionClass $rc)
+    public function getConstructor(ReflectionClass $rc)
     {
         return $rc->getConstructor();
     }
@@ -174,7 +173,7 @@ class DependencyBuilder
      *
      * @return bool
      */
-    function hasConstructor(ReflectionClass $rc)
+    public function hasConstructor(ReflectionClass $rc)
     {
         return !is_null($rc->getConstructor());
     }
@@ -186,7 +185,7 @@ class DependencyBuilder
      *
      * @return bool
      */
-    function hasParametersOnConstructor(ReflectionClass $rc)
+    public function hasParametersOnConstructor(ReflectionClass $rc)
     {
         if ($this->hasConstructor($rc)) {
             $constructor = $this->getConstructor($rc);
@@ -205,7 +204,7 @@ class DependencyBuilder
      *
      * @return array
      */
-    function getParametersRequiredToConstructReflectedClass(ReflectionClass $rc)
+    public function getParametersRequiredToConstructReflectedClass(ReflectionClass $rc)
     {
         return $this->getConstructor($rc)->getParameters();
     }
@@ -218,7 +217,7 @@ class DependencyBuilder
      *
      * @return array
      */
-    function getGivenConstructorParametersData($requiredParameters)
+    public function getGivenConstructorParametersData($requiredParameters)
     {
         $givenParametersData = [];
 
@@ -248,7 +247,7 @@ class DependencyBuilder
                 continue;
             }
 
-            $type = (string)$param->getType();
+            $type = (string) $param->getType();
 
             /*
              * If canAutowiring is enabled and the
@@ -256,7 +255,7 @@ class DependencyBuilder
              * in the required parameters
              */
             if ($this->container->canAutowiring() && class_exists($type)) {
-                $givenParametersData[$paramName] = (new DependencyBuilder($this->getContainer()))->build($type);
+                $givenParametersData[$paramName] = (new self($this->getContainer()))->build($type);
             }
         }
 
@@ -272,7 +271,7 @@ class DependencyBuilder
      *
      * @throws MissingConstructorArgumentException
      */
-    function ensureNoMissingConstructorParameter($params, $givenParametersValues, $rc)
+    public function ensureNoMissingConstructorParameter($params, $givenParametersValues, $rc)
     {
         $rcName = $rc->getName();
 
@@ -286,8 +285,9 @@ class DependencyBuilder
             $paramName = $param->getName();
 
             /* Optional parameters should be ignored */
-            if(!$param->isOptional() && !array_key_exists($paramName, $givenParametersValues))
+            if (!$param->isOptional() && !array_key_exists($paramName, $givenParametersValues)) {
                 throw new MissingConstructorArgumentException("Missing argument \${$paramName} for {$rcName}::__construct()");
+            }
         }
     }
 
@@ -300,7 +300,7 @@ class DependencyBuilder
      *
      * @return object
      */
-    function createInstanceWithParameters(ReflectionClass $rc)
+    public function createInstanceWithParameters(ReflectionClass $rc)
     {
         $params = $this->getParametersRequiredToConstructReflectedClass($rc);
         $givenConstructorParametersData = $this->getGivenConstructorParametersData($params);
@@ -318,7 +318,7 @@ class DependencyBuilder
      *
      * @return object
      */
-    function createInstance(ReflectionClass $rc)
+    public function createInstance(ReflectionClass $rc)
     {
         return $rc->newInstanceWithoutConstructor();
     }
