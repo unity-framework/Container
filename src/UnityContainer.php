@@ -20,7 +20,7 @@ use Unity\Component\Container\Exceptions\DuplicateIdException;
 class UnityContainer implements IUnityContainer
 {
     protected $resolvers = [];
-    protected $autowiring;
+    protected $autowiring = true;
 
     /**
      * Resolves and returns the dependency registered on the first call.
