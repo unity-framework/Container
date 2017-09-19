@@ -2,19 +2,19 @@
 
 use Helpers\Bar;
 use Helpers\Foo;
+use PHPUnit\Framework\TestCase;
 use Unity\Component\Container\Contracts\IDependencyResolver;
 use Unity\Component\Container\Dependency\DependencyResolver;
 use Unity\Component\Container\Exceptions\DuplicateIdException;
 use Unity\Component\Container\Exceptions\NotFoundException;
 use Unity\Component\Container\UnityContainer;
-use PHPUnit\Framework\TestCase;
 
 /**
  * @author Eleandro Duzentos <eleandro@inbox.ru>
  */
 class UnityContainerTest extends TestCase
 {
-    function testRegisterHas()
+    public function testRegisterHas()
     {
         $container = $this->getContainer();
 
@@ -26,7 +26,7 @@ class UnityContainerTest extends TestCase
         $this->assertTrue($container->has('id'));
     }
 
-    function testUnregister()
+    public function testUnregister()
     {
         $container = $this->getContainer();
 
@@ -36,7 +36,7 @@ class UnityContainerTest extends TestCase
         $this->assertFalse($container->has('id'));
     }
 
-    function testDuplicateDependencyResolverException()
+    public function testDuplicateDependencyResolverException()
     {
         $this->expectException(DuplicateIdException::class);
 
@@ -46,7 +46,7 @@ class UnityContainerTest extends TestCase
         $container->register('id', null);
     }
 
-    function testGet()
+    public function testGet()
     {
         $container = $this->getContainer();
 
@@ -58,7 +58,7 @@ class UnityContainerTest extends TestCase
         $this->assertSame($instance, $container->get('bar'));
     }
 
-    function testGetNotFoundException()
+    public function testGetNotFoundException()
     {
         $this->expectException(NotFoundException::class);
 
@@ -67,7 +67,7 @@ class UnityContainerTest extends TestCase
         $container->get(null);
     }
 
-    function testMake()
+    public function testMake()
     {
         $container = $this->getContainer();
 
@@ -80,7 +80,7 @@ class UnityContainerTest extends TestCase
         $this->assertNotSame($instance1, $instance2);
     }
 
-    function testMakeNotFoundException()
+    public function testMakeNotFoundException()
     {
         $this->expectException(NotFoundException::class);
 
@@ -89,7 +89,7 @@ class UnityContainerTest extends TestCase
         $container->make(null);
     }
 
-    function testReplace()
+    public function testReplace()
     {
         $container = $this->getContainer();
 
@@ -102,7 +102,7 @@ class UnityContainerTest extends TestCase
         $this->assertNotSame($instance1, $instance2);
     }
 
-    function testSetGetResolver()
+    public function testSetGetResolver()
     {
         $dependencyResolverMock = $this->createMock(IDependencyResolver::class);
 
@@ -114,7 +114,7 @@ class UnityContainerTest extends TestCase
         $this->assertSame($dependencyResolverMock, $container->getDependencyResolver('id'));
     }
 
-    function getContainer()
+    public function getContainer()
     {
         return new UnityContainer();
     }

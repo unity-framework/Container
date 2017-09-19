@@ -4,14 +4,13 @@ namespace Unity\Component\Container\Dependency;
 
 use Exception;
 use Psr\Container\ContainerExceptionInterface;
-use Unity\Component\Container\Contracts\IUnityContainer;
 use Unity\Component\Container\Contracts\IDependencyResolver;
+use Unity\Component\Container\Contracts\IUnityContainer;
 use Unity\Component\Container\Exceptions\ContainerException;
 
 /**
  * Class DependencyResolver.
  *
- * @package Unity\Component\Container\Dependency
  *
  * @author Eleandro Duzentos <eleandro@inbox.ru>
  */
@@ -24,7 +23,7 @@ class DependencyResolver implements IDependencyResolver
     protected $singleton;
     protected $container;
 
-    function __construct(string $id, $entry, IUnityContainer $container)
+    public function __construct(string $id, $entry, IUnityContainer $container)
     {
         $this->id = $id;
         $this->entry = $entry;
@@ -36,7 +35,7 @@ class DependencyResolver implements IDependencyResolver
      *
      * @return string
      */
-    function getId()
+    public function getId()
     {
         return $this->id;
     }
@@ -46,7 +45,7 @@ class DependencyResolver implements IDependencyResolver
      *
      * @return mixed
      */
-    function getEntry()
+    public function getEntry()
     {
         return $this->entry;
     }
@@ -56,7 +55,7 @@ class DependencyResolver implements IDependencyResolver
      *
      * @return bool
      */
-    function hasSingleton()
+    public function hasSingleton()
     {
         return !is_null($this->singleton);
     }
@@ -69,10 +68,11 @@ class DependencyResolver implements IDependencyResolver
      *
      * @return mixed
      */
-    function getSingleton()
+    public function getSingleton()
     {
-        if($this->hasSingleton())
+        if ($this->hasSingleton()) {
             return $this->singleton;
+        }
 
         $instance = $this->make();
 
@@ -88,7 +88,7 @@ class DependencyResolver implements IDependencyResolver
      *
      * @return mixed
      */
-    function setSingleton($dependency)
+    public function setSingleton($dependency)
     {
         return $this->singleton = $dependency;
     }
@@ -98,7 +98,7 @@ class DependencyResolver implements IDependencyResolver
      *
      * @return mixed
      */
-    function resolve()
+    public function resolve()
     {
         return $this->getSingleton();
     }
@@ -112,7 +112,7 @@ class DependencyResolver implements IDependencyResolver
      *
      * @return mixed
      */
-    function make($params = [])
+    public function make($params = [])
     {
         $instance = null;
         $entry = $this->getEntry();
@@ -121,7 +121,7 @@ class DependencyResolver implements IDependencyResolver
             $params = array_merge($params, $this->params);
         }
 
-        if(is_string($entry) && class_exists($entry)) {
+        if (is_string($entry) && class_exists($entry)) {
             try {
                 return (new DependencyBuilder(
                     $this->container,
@@ -129,7 +129,7 @@ class DependencyResolver implements IDependencyResolver
                     $this->binds
                 ))->build($entry);
             } catch (Exception $ex) {
-                throw new ContainerException("An error occurs while trying to build \" {$this->id} \".\nError: " . $ex->getMessage(), $ex->getCode());
+                throw new ContainerException("An error occurs while trying to build \" {$this->id} \".\nError: ".$ex->getMessage(), $ex->getCode());
             }
         }
 
@@ -147,7 +147,7 @@ class DependencyResolver implements IDependencyResolver
      *
      * @return $this
      */
-    function give(array $params)
+    public function give(array $params)
     {
         $this->params = $params;
 
@@ -155,11 +155,11 @@ class DependencyResolver implements IDependencyResolver
     }
 
     /**
-     * Gets the given parameters
+     * Gets the given parameters.
      *
      * @return array
      */
-    function getParams()
+    public function getParams()
     {
         return $this->params;
     }
@@ -171,7 +171,7 @@ class DependencyResolver implements IDependencyResolver
      *
      * @return $this
      */
-    function bind(array $to)
+    public function bind(array $to)
     {
         $this->binds = $to;
 
@@ -179,11 +179,11 @@ class DependencyResolver implements IDependencyResolver
     }
 
     /**
-     * Gets the given binds
+     * Gets the given binds.
      *
      * @return array
      */
-    function getBinds()
+    public function getBinds()
     {
         return $this->binds;
     }

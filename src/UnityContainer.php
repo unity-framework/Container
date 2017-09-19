@@ -2,18 +2,17 @@
 
 namespace Unity\Component\Container;
 
-use Psr\Container\NotFoundExceptionInterface;
 use Psr\Container\ContainerExceptionInterface;
-use Unity\Component\Container\Contracts\IUnityContainer;
+use Psr\Container\NotFoundExceptionInterface;
 use Unity\Component\Container\Contracts\IDependencyResolver;
+use Unity\Component\Container\Contracts\IUnityContainer;
 use Unity\Component\Container\Dependency\DependencyResolverFactory;
-use Unity\Component\Container\Exceptions\NotFoundException;
 use Unity\Component\Container\Exceptions\DuplicateIdException;
+use Unity\Component\Container\Exceptions\NotFoundException;
 
 /**
  * Class UnityContainer.
  *
- * @package Unity\Component\Container
  *
  * @author Eleandro Duzentos <eleandro@inbox.ru>
  */
@@ -33,7 +32,7 @@ class UnityContainer implements IUnityContainer
      *
      * @return mixed
      */
-    function get($id)
+    public function get($id)
     {
         if ($this->has($id)) {
             return $this->getDependencyResolver($id)->getSingleton();
@@ -49,7 +48,7 @@ class UnityContainer implements IUnityContainer
      *
      * @return bool
      */
-    function has($id)
+    public function has($id)
     {
         return isset($this->resolvers[$id]);
     }
@@ -58,17 +57,17 @@ class UnityContainer implements IUnityContainer
      * Resolves and returns the registered dependency on every call.
      *
      * @param $id
-     *
      * @param null $params
      *
      * @throws NotFoundException
      *
      * @return mixed
      */
-    function make($id, $params = null)
+    public function make($id, $params = null)
     {
-        if($this->has($id))
+        if ($this->has($id)) {
             return $this->getDependencyResolver($id)->make($params);
+        }
 
         throw new NotFoundException("No dependency resolver founded for \"{$id}\" on this container.");
     }
@@ -77,17 +76,17 @@ class UnityContainer implements IUnityContainer
      * Register a dependency resolver.
      *
      * @param string $id
-     * @param mixed $entry The content that will be used to generate the dependency.
+     * @param mixed  $entry The content that will be used to generate the dependency.
      *
      * @throws DuplicateIdException
      *
      * @return IDependencyResolver
      */
-    function register($id, $entry)
+    public function register($id, $entry)
     {
-        if($this->has($id))
+        if ($this->has($id)) {
             throw new DuplicateIdException("The container already has a dependency resolver for \"{$id}\".");
-
+        }
         return $this->setDependencyResolver($id, DependencyResolverFactory::make($id, $entry, $this));
     }
 
@@ -100,11 +99,11 @@ class UnityContainer implements IUnityContainer
      *
      * @return UnityContainer
      */
-    function unregister($id)
+    public function unregister($id)
     {
-        if(!$this->has($id))
+        if (!$this->has($id)) {
             throw new NotFoundException("No dependency resolver founded for \"{$id}\" on this container.");
-
+        }
         unset($this->resolvers[$id]);
 
         return $this;
@@ -116,11 +115,11 @@ class UnityContainer implements IUnityContainer
      * This method does'nt replaces dependencies already resolved by this container.
      *
      * @param string $id
-     * @param mixed $entry The content that will be used to resolve the dependency.
+     * @param mixed  $entry The content that will be used to resolve the dependency.
      *
      * @return IDependencyResolver
      */
-    function replace($id, $entry)
+    public function replace($id, $entry)
     {
         return $this->setDependencyResolver($id, DependencyResolverFactory::make($id, $entry, $this));
     }
@@ -132,7 +131,7 @@ class UnityContainer implements IUnityContainer
      *
      * @return mixed
      */
-    function getDependencyResolver($id)
+    public function getDependencyResolver($id)
     {
         return $this->resolvers[$id];
     }
@@ -140,32 +139,32 @@ class UnityContainer implements IUnityContainer
     /**
      * Sets the resolver.
      *
-     * @param string $id Identifier of the resolver to get.
+     * @param string              $id       Identifier of the resolver to get.
      * @param IDependencyResolver $resolver
      *
      * @return IDependencyResolver
      */
-    function setDependencyResolver($id, IDependencyResolver $resolver)
+    public function setDependencyResolver($id, IDependencyResolver $resolver)
     {
         return $this->resolvers[$id] = $resolver;
     }
 
     /**
-     * Enable|Disable autowiring
+     * Enable|Disable autowiring.
      *
      * @param bool $enable
      */
-    function enableAutowiring($enable)
+    public function enableAutowiring($enable)
     {
         $this->autowiring = $enable;
     }
 
     /**
-     * Checks if autowiring is enabled
+     * Checks if autowiring is enabled.
      *
      * @return bool
      */
-    function canAutowiring()
+    public function canAutowiring()
     {
         return $this->autowiring;
     }

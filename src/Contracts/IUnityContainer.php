@@ -2,16 +2,15 @@
 
 namespace Unity\Component\Container\Contracts;
 
+use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
-use Psr\Container\ContainerExceptionInterface;
 use Unity\Component\Container\Exceptions\DuplicateIdException;
 use Unity\Component\Container\Exceptions\NotFoundException;
 
 /**
- * Interface IUnityContainer
+ * Interface IUnityContainer.
  *
- * @package Unity\Component\Container\Contracts
  *
  * @author Eleandro Duzentos <eleandro@inbox.ru>
  */
@@ -28,7 +27,7 @@ interface IUnityContainer extends ContainerInterface
      *
      * @return mixed
      */
-    function get($id);
+    public function get($id);
 
     /**
      * Checks if the container has a dependency resolver for the given $id.
@@ -37,32 +36,31 @@ interface IUnityContainer extends ContainerInterface
      *
      * @return bool
      */
-    function has($id);
+    public function has($id);
 
     /**
      * Resolves and returns the registered dependency on every call.
      *
      * @param $id
-     *
      * @param null $params
      *
      * @throws NotFoundException
      *
      * @return mixed
      */
-    function make($id, $params = null);
+    public function make($id, $params = null);
 
     /**
      * Register a dependency resolver.
      *
      * @param string $id
-     * @param mixed $entry The content that will be used to generate the dependency.
+     * @param mixed  $entry The content that will be used to generate the dependency.
      *
      * @throws DuplicateIdException
      *
      * @return IDependencyResolver
      */
-    function register($id, $entry);
+    public function register($id, $entry);
 
     /**
      * Unregister a resolver.
@@ -73,7 +71,7 @@ interface IUnityContainer extends ContainerInterface
      *
      * @return IUnityContainer
      */
-    function unregister($id);
+    public function unregister($id);
 
     /**
      * Replaces a registered resolver.
@@ -81,11 +79,11 @@ interface IUnityContainer extends ContainerInterface
      * This method does'nt replaces dependencies already resolved by this container.
      *
      * @param string $id
-     * @param mixed $entry The content that will be used to resolve the dependency.
+     * @param mixed  $entry The content that will be used to resolve the dependency.
      *
      * @return IDependencyResolver
      */
-    function replace($id, $entry);
+    public function replace($id, $entry);
 
     /**
      * Gets the resolver.
@@ -94,29 +92,29 @@ interface IUnityContainer extends ContainerInterface
      *
      * @return mixed
      */
-    function getDependencyResolver($id);
+    public function getDependencyResolver($id);
 
     /**
      * Sets the resolver.
      *
-     * @param string $id Identifier of the resolver to get.
+     * @param string              $id       Identifier of the resolver to get.
      * @param IDependencyResolver $resolver
      *
      * @return IDependencyResolver
      */
-    function setDependencyResolver($id, IDependencyResolver $resolver);
+    public function setDependencyResolver($id, IDependencyResolver $resolver);
 
     /**
-     * Enable|Disable autowiring
+     * Enable|Disable autowiring.
      *
      * @param bool $enable
      */
-    function enableAutowiring($enable);
+    public function enableAutowiring($enable);
 
     /**
-     * Checks if autowiring is enabled
+     * Checks if autowiring is enabled.
      *
      * @return bool
      */
-    function canAutowiring();
+    public function canAutowiring();
 }

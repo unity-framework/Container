@@ -6,9 +6,8 @@ use Psr\Container\ContainerExceptionInterface;
 use Unity\Component\Container\Exceptions\ContainerException;
 
 /**
- * Interface IDependencyResolver
+ * Interface IDependencyResolver.
  *
- * @package Unity\Component\Container\Exceptions
  *
  * @author Eleandro Duzentos <eleandro@inbox.ru>
  */
@@ -19,28 +18,28 @@ interface IDependencyResolver
      *
      * @return mixed
      */
-    function resolve();
+    public function resolve();
 
     /**
      * Gets the resolver id.
      *
      * @return string
      */
-    function getId();
+    public function getId();
 
     /**
      * Gets resolver entry.
      *
      * @return mixed
      */
-    function getEntry();
+    public function getEntry();
 
     /**
      * Checks if resolver has a singleton instance.
      *
      * @return bool
      */
-    function hasSingleton();
+    public function hasSingleton();
 
     /**
      * Resolves and returns content on the first call,
@@ -50,7 +49,7 @@ interface IDependencyResolver
      *
      * @return mixed
      */
-    function getSingleton();
+    public function getSingleton();
 
     /**
      * Sets the singleton content.
@@ -59,7 +58,7 @@ interface IDependencyResolver
      *
      * @return mixed
      */
-    function setSingleton($content);
+    public function setSingleton($content);
 
     /**
      * Resolves and returns a new dependency on every call.
@@ -70,7 +69,7 @@ interface IDependencyResolver
      *
      * @return mixed
      */
-    function make($params = null);
+    public function make($params = null);
 
     /**
      * Parameters to be given to the constructor on build time.
@@ -79,14 +78,14 @@ interface IDependencyResolver
      *
      * @return $this
      */
-    function give(array $params);
+    public function give(array $params);
 
     /**
-     * Gets the given parameters
+     * Gets the given parameters.
      *
      * @return array
      */
-    function getParams();
+    public function getParams();
 
     /**
      * Binds others dependencies on container to this dependency.
@@ -95,12 +94,12 @@ interface IDependencyResolver
      *
      * @return $this
      */
-    function bind(array $to);
+    public function bind(array $to);
 
     /**
-     * Gets the given binds
+     * Gets the given binds.
      *
      * @return array
      */
-    function getBinds();
+    public function getBinds();
 }

@@ -10,7 +10,7 @@ use Unity\Component\Container\Dependency\DependencyResolverFactory;
  */
 class DependencyResolverFactoryTest extends TestCase
 {
-    function testMake()
+    public function testMake()
     {
         $containerMock = $this->createMock(IUnityContainer::class);
 
