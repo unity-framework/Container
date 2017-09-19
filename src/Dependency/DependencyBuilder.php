@@ -10,6 +10,8 @@ use Unity\Component\Container\Exceptions\MissingConstructorArgumentException;
 /**
  * Class DependencyBuilder.
  *
+ * Builds dependencies using Reflection.
+ *
  * @package Unity\Component\Container\Dependency
  *
  * @author Eleandro Duzentos <eleandro@inbox.ru>
@@ -24,41 +26,43 @@ class DependencyBuilder
     /**
      * DependencyBuilder constructor.
      *
-     * @param array $params
-     * @param array $binds
      * @param IUnityContainer $container
+     * @param array           $params
+     * @param array           $binds
      */
-    function __construct($params = null, $binds = null, IUnityContainer $container)
+    function __construct(IUnityContainer $container, $params = null, $binds = null)
     {
+        $this->container = $container;
         $this->params = $params;
         $this->binds = $binds;
-        $this->container = $container;
     }
 
     /**
-     * Checks if a parameter exists
+     * Checks if a parameter needed to construct a dependency was given.
      *
-     * @param $paramName
+     * @param $parameterName
+     *
      * @return bool
      */
-    function hasParam($paramName)
+    function hasParam($parameterName)
     {
-        return isset($this->params[$paramName]);
+        return isset($this->params[$parameterName]);
     }
 
     /**
-     * Gets a parameter
+     * Gets a parameter needed to construct a dependency.
      *
-     * @param $paramName
+     * @param $parameterName
+     *
      * @return mixed
      */
-    function getParam($paramName)
+    function getParam($parameterName)
     {
-        return $this->params[$paramName];
+        return $this->params[$parameterName];
     }
 
     /**
-     * Gets all parameters
+     * Gets all given parameters.
      *
      * @return array
      */
@@ -68,9 +72,10 @@ class DependencyBuilder
     }
 
     /**
-     * Checks if a bind exists
+     * Checks if a bind exists.
      *
      * @param $bindName
+     *
      * @return bool
      */
     function hasBind($bindName)
@@ -79,9 +84,10 @@ class DependencyBuilder
     }
 
     /**
-     * Gets a bind
+     * Gets a bind.
      *
      * @param $bindName
+     *
      * @return mixed
      */
     function getBind($bindName)
@@ -92,7 +98,7 @@ class DependencyBuilder
     }
 
     /**
-     * Gets all binds
+     * Gets all binds.
      *
      * @return array
      */
@@ -102,7 +108,7 @@ class DependencyBuilder
     }
 
     /**
-     * Gets the container
+     * Gets the container instance.
      *
      * @return IUnityContainer
      */
@@ -112,8 +118,7 @@ class DependencyBuilder
     }
 
     /**
-     * Builds a class, instantiate
-     * and returns it
+     * Constructs and returns a class instance.
      *
      * @param $className
      *
@@ -121,10 +126,10 @@ class DependencyBuilder
      */
     function build($className)
     {
-        /** Get a ReflectionInstance of the given class name */
+        /* Get a ReflectionInstance of the given class name */
         $rc = $this->reflectClass($className);
 
-        /**
+        /*
          * We need to check if $rc `hasParametersOnConstructor()`,
          * if it's true, then `createInstanceWithParametersOnConstructor()`
          */
@@ -132,49 +137,29 @@ class DependencyBuilder
             return $this->createInstanceWithParameters($rc);
         }
 
-        /**
-        * If we're here, that means that $rc
-        * has'nt a constructor, so, we just...
+        /*
+        * If we're here, that means $rc has'nt a constructor, so we just...
         */
         return $this->createInstance($rc);
     }
 
     /**
-     * Sets if InstanceBuilder can search for
-     * dependencies in the entry and resolve them
+     * Gets a ReflectionClass instance for $class.
      *
-     * @param bool $enabled
-     */
-    function enableAutowiring($enabled)
-    {
-        $this->autowiring = $enabled;
-    }
-
-    /**
-     * Checks if the autowiring is enabled
+     * @param string $class Class to be reflected.
      *
-     * @return bool
-     */
-    function canAutowiring()
-    {
-        return $this->autowiring;
-    }
-
-    /**
-     * Gets a ReflectionClass instance
-     *
-     * @param $className
      * @return ReflectionClass
      */
-    function reflectClass($className)
+    function reflectClass($class)
     {
-        return new ReflectionClass($className);
+        return new ReflectionClass($class);
     }
 
     /**
-     * Gets the constructor of the required class
+     * Gets the constructor of the reflected class.
      *
      * @param ReflectionClass $rc
+     *
      * @return ReflectionMethod
      */
     function getConstructor(ReflectionClass $rc)
@@ -183,9 +168,10 @@ class DependencyBuilder
     }
 
     /**
-     * Checks if the required class has constructor
+     * Checks if the reflected class has constructor.
      *
      * @param ReflectionClass $rc
+     *
      * @return bool
      */
     function hasConstructor(ReflectionClass $rc)
@@ -194,10 +180,10 @@ class DependencyBuilder
     }
 
     /**
-     * Checks if the building class has
-     * parameters in the constructor
+     * Checks if the reflected class has parameters in the constructor.
      *
      * @param ReflectionClass $rc
+     *
      * @return bool
      */
     function hasParametersOnConstructor(ReflectionClass $rc)
@@ -212,126 +198,124 @@ class DependencyBuilder
     }
 
     /**
-     * Returns an array with all parameters
-     * types of each parameter on the building
-     * class constructor
+     * Returns an array with all parameters required to construct
+     * the reflected class.
      *
      * @param ReflectionClass $rc
+     *
      * @return array
      */
-    function getParametersRequiredByTheConstructor(ReflectionClass $rc)
+    function getParametersRequiredToConstructReflectedClass(ReflectionClass $rc)
     {
         return $this->getConstructor($rc)->getParameters();
     }
 
     /**
-     * Returns an array with all necessary
-     * parameters to build the building class
+     * Returns an array with all given parameters to construct
+     * the reflected class.
      *
-     * @param $params
+     * @param $requiredParameters
+     *
      * @return array
-     * @internal param ReflectionClass $rc
      */
-    function getConstructorParametersValues($params)
+    function getGivenConstructorParametersData($requiredParameters)
     {
-        $paramsValues = [];
+        $givenParametersData = [];
 
-        /**
-        * For each parameter, get the respective value
-        */
-        foreach ($params as $param) {
+        /*
+         * For each required parameter, get the given para value
+         */
+        foreach ($requiredParameters as $param) {
             $paramName = $param->getName();
 
-            /**
-            * If there's a bind for this param, get,
-            * store it and jump to the next parameter
-            */
+            /*
+             * If there's a bind for this param, get,
+             * store it and jump to the next parameter
+             */
             if ($this->hasBind($paramName)) {
-                $paramsValues[$paramName] = $this->getBind($paramName);
+                $givenParametersData[$paramName] = $this->getBind($paramName);
 
                 continue;
             }
 
-            /**
-            * If there's an explicit param value
-            * for this param, get, store it and jump to the next parameter
-            */
+            /*
+             * If there's an explicit param value
+             * for this param, get, store it and jump to the next parameter
+             */
             if ($this->hasParam($paramName)) {
-                $paramsValues[$paramName] = $this->getParam($paramName);
+                $givenParametersData[$paramName] = $this->getParam($paramName);
 
                 continue;
             }
 
             $type = (string)$param->getType();
 
-            /**
-            * If canAutowiring is enabled and the
-            * required param is a class, get and store it
-            * in the required parameters
-            */
-            if ($this->canAutowiring() && class_exists($type)) {
-                $paramsValues[$paramName] = (new DependencyBuilder(
-                    null,
-                    null,
-                    $this->getContainer()
-                ))->build($type);
+            /*
+             * If canAutowiring is enabled and the
+             * required param is a class, get and store it
+             * in the required parameters
+             */
+            if ($this->container->canAutowiring() && class_exists($type)) {
+                $givenParametersData[$paramName] = (new DependencyBuilder($this->getContainer()))->build($type);
             }
         }
 
-        return $paramsValues;
+        return $givenParametersData;
     }
 
     /**
-     * Ensure that no needed parameter is missing
+     * Ensure that no needed parameter is missing.
      *
      * @param $params
-     * @param $paramValues
+     * @param $givenParametersValues
      * @param $rc
+     *
      * @throws MissingConstructorArgumentException
      */
-    function ensureNoMissingConstructorParameter($params, $paramValues, $rc)
+    function ensureNoMissingConstructorParameter($params, $givenParametersValues, $rc)
     {
         $rcName = $rc->getName();
 
-        /**
-         * We need to ensure that all required
-         * parameters to construct the building
-         * class were given, for it, we must check
-         * if the $paramValues contains all parameters
-         * names in your keys, except the optional parameters
+        /*
+         * We need to ensure that all required parameters to
+         * construct the reflected class were given, for it,
+         * we must check if the $givenParametersValues contains
+         * all parameters names in your keys, except the optional parameters
          */
         foreach ($params as $param) {
             $paramName = $param->getName();
 
-            /** Optional parameters should be ignored */
-            if(!$param->isOptional() && !array_key_exists($paramName, $paramValues))
+            /* Optional parameters should be ignored */
+            if(!$param->isOptional() && !array_key_exists($paramName, $givenParametersValues))
                 throw new MissingConstructorArgumentException("Missing argument \${$paramName} for {$rcName}::__construct()");
         }
     }
 
     /**
      * Creates a new instance of the reflected class
-     * and put all needed arguments on the constructor
-     * if needed
+     * and put all required arguments on the constructor
+     * if needed.
      *
      * @param ReflectionClass $rc
+     *
      * @return object
      */
     function createInstanceWithParameters(ReflectionClass $rc)
     {
-        $params = $this->getParametersRequiredByTheConstructor($rc);
-        $paramsValues = $this->getConstructorParametersValues($params);
+        $params = $this->getParametersRequiredToConstructReflectedClass($rc);
+        $givenConstructorParametersData = $this->getGivenConstructorParametersData($params);
 
-        $this->ensureNoMissingConstructorParameter($params, $paramsValues, $rc);
+        $this->ensureNoMissingConstructorParameter($params, $givenConstructorParametersData, $rc);
 
-        return $rc->newInstanceArgs($paramsValues);
+        return $rc->newInstanceArgs($givenConstructorParametersData);
     }
 
     /**
      * Creates a new instance of the reflected class
-     * without a constructor
+     * without a constructor.
      *
      * @param ReflectionClass $rc
+     *
      * @return object
      */
     function createInstance(ReflectionClass $rc)
