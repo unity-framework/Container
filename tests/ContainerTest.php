@@ -7,12 +7,12 @@ use Unity\Component\Container\Contracts\IDependencyResolver;
 use Unity\Component\Container\Dependency\DependencyResolver;
 use Unity\Component\Container\Exceptions\DuplicateIdException;
 use Unity\Component\Container\Exceptions\NotFoundException;
-use Unity\Component\Container\UnityContainer;
+use Unity\Component\Container\Container;
 
 /**
  * @author Eleandro Duzentos <eleandro@inbox.ru>
  */
-class UnityContainerTest extends TestCase
+class ContainerTest extends TestCase
 {
     public function testRegisterHas()
     {
@@ -116,6 +116,6 @@ class UnityContainerTest extends TestCase
 
     public function getContainer()
     {
-        return new UnityContainer();
+        return new Container();
     }
 }

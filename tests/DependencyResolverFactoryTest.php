@@ -2,7 +2,7 @@
 
 use PHPUnit\Framework\TestCase;
 use Unity\Component\Container\Contracts\IDependencyResolver;
-use Unity\Component\Container\Contracts\IUnityContainer;
+use Unity\Component\Container\Contracts\IContainer;
 use Unity\Component\Container\Dependency\DependencyResolverFactory;
 
 /**
@@ -12,7 +12,7 @@ class DependencyResolverFactoryTest extends TestCase
 {
     public function testMake()
     {
-        $containerMock = $this->createMock(IUnityContainer::class);
+        $containerMock = $this->createMock(IContainer::class);
 
         $this->assertInstanceOf(
             IDependencyResolver::class,

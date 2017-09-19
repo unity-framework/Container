@@ -4,7 +4,7 @@ namespace Unity\Component\Container\Dependency;
 
 use ReflectionClass;
 use ReflectionMethod;
-use Unity\Component\Container\Contracts\IUnityContainer;
+use Unity\Component\Container\Contracts\IContainer;
 use Unity\Component\Container\Exceptions\MissingConstructorArgumentException;
 
 /**
@@ -25,11 +25,11 @@ class DependencyBuilder
     /**
      * DependencyBuilder constructor.
      *
-     * @param IUnityContainer $container
+     * @param IContainer $container
      * @param array           $params
      * @param array           $binds
      */
-    public function __construct(IUnityContainer $container, $params = null, $binds = null)
+    public function __construct(IContainer $container, $params = null, $binds = null)
     {
         $this->container = $container;
         $this->params = $params;
@@ -109,7 +109,7 @@ class DependencyBuilder
     /**
      * Gets the container instance.
      *
-     * @return IUnityContainer
+     * @return IContainer
      */
     public function getContainer()
     {

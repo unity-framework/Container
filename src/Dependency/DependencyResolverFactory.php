@@ -2,7 +2,7 @@
 
 namespace Unity\Component\Container\Dependency;
 
-use Unity\Component\Container\Contracts\IUnityContainer;
+use Unity\Component\Container\Contracts\IContainer;
 
 /**
  * Class DependencyResolverFactory.
@@ -12,7 +12,7 @@ use Unity\Component\Container\Contracts\IUnityContainer;
  */
 class DependencyResolverFactory
 {
-    public static function Make($id, $entry, IUnityContainer $container)
+    public static function Make($id, $entry, IContainer $container)
     {
         return new DependencyResolver($id, $entry, $container);
     }

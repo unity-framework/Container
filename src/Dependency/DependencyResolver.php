@@ -5,7 +5,7 @@ namespace Unity\Component\Container\Dependency;
 use Exception;
 use Psr\Container\ContainerExceptionInterface;
 use Unity\Component\Container\Contracts\IDependencyResolver;
-use Unity\Component\Container\Contracts\IUnityContainer;
+use Unity\Component\Container\Contracts\IContainer;
 use Unity\Component\Container\Exceptions\ContainerException;
 
 /**
@@ -23,7 +23,7 @@ class DependencyResolver implements IDependencyResolver
     protected $singleton;
     protected $container;
 
-    public function __construct(string $id, $entry, IUnityContainer $container)
+    public function __construct(string $id, $entry, IContainer $container)
     {
         $this->id = $id;
         $this->entry = $entry;

@@ -2,7 +2,7 @@
 
 use Helpers\Bar;
 use PHPUnit\Framework\TestCase;
-use Unity\Component\Container\Contracts\IUnityContainer;
+use Unity\Component\Container\Contracts\IContainer;
 use Unity\Component\Container\Dependency\DependencyResolver;
 
 /**
@@ -110,7 +110,7 @@ class DependencyResolverTest extends TestCase
 
     public function getDependencyResolver($entry = null)
     {
-        $containerMock = $this->createMock(IUnityContainer::class);
+        $containerMock = $this->createMock(IContainer::class);
 
         $containerMock
             ->expects($this->any())

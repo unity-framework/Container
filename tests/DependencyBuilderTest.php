@@ -8,7 +8,7 @@ use Helpers\WithConstructorParameterBind;
 use Helpers\WithConstructorParameters;
 use Helpers\WithoutConstructor;
 use PHPUnit\Framework\TestCase;
-use Unity\Component\Container\Contracts\IUnityContainer;
+use Unity\Component\Container\Contracts\IContainer;
 use Unity\Component\Container\Dependency\DependencyBuilder;
 use Unity\Component\Container\Exceptions\MissingConstructorArgumentException;
 
@@ -34,13 +34,13 @@ class DependencyBuilderTest extends TestCase
 
     public function testGetContainer()
     {
-        $containerMock = $this->createMock(IUnityContainer::class);
+        $containerMock = $this->createMock(IContainer::class);
 
         $instanceBuilder = $this->getDependencyBuilder($containerMock);
 
         $container = $instanceBuilder->getContainer();
 
-        $this->assertInstanceOf(IUnityContainer::class, $container);
+        $this->assertInstanceOf(IContainer::class, $container);
     }
 
     public function testGetHasParamBinds()
@@ -49,7 +49,7 @@ class DependencyBuilderTest extends TestCase
 
         $this->assertFalse($dependencyBuilder->hasBind('foo'));
 
-        $containerMock = $this->createMock(IUnityContainer::class);
+        $containerMock = $this->createMock(IContainer::class);
 
         $containerMock
             ->expects($this->once())
@@ -216,7 +216,7 @@ class DependencyBuilderTest extends TestCase
      */
     public function mockContainerForGetSetHasParamBinds()
     {
-        $container = $this->createMock(IUnityContainer::class);
+        $container = $this->createMock(IContainer::class);
         $container
             ->expects($this->once())
             ->method('has')
@@ -236,7 +236,7 @@ class DependencyBuilderTest extends TestCase
      */
     public function mockContainerForTestWithConstructorParameterBind()
     {
-        $containerMock = $this->createMock(IUnityContainer::class);
+        $containerMock = $this->createMock(IContainer::class);
         $containerMock
             ->expects($this->any())
             ->method('has')
@@ -253,9 +253,9 @@ class DependencyBuilderTest extends TestCase
         return $containerMock;
     }
 
-    public function getDependencyBuilder(IUnityContainer $container = null, $params = null, $binds = null)
+    public function getDependencyBuilder(IContainer $container = null, $params = null, $binds = null)
     {
-        $containerMock = $this->createMock(IUnityContainer::class);
+        $containerMock = $this->createMock(IContainer::class);
 
         $containerMock
             ->expects($this->any())
