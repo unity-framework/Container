@@ -12,21 +12,21 @@ class DependencyResolverTest extends TestCase
 {
     const ID = 'testId';
 
-    function testGetId()
+    public function testGetId()
     {
         $dependencyResolver = $this->getDependencyResolver();
 
         $this->assertEquals(self::ID, $dependencyResolver->getId());
     }
 
-    function testGetEntry()
+    public function testGetEntry()
     {
         $dependencyResolver = $this->getDependencyResolver();
 
         $this->assertEquals(Bar::class, $dependencyResolver->getEntry());
     }
 
-    function testGiveGetParams()
+    public function testGiveGetParams()
     {
         $dependencyResolver = $this->getDependencyResolver();
         $params = ['e200', 'Eleandro'];
@@ -37,7 +37,7 @@ class DependencyResolverTest extends TestCase
         $this->assertSame($params, $dependencyResolver->getParams());
     }
 
-    function testBindGetBinds()
+    public function testBindGetBinds()
     {
         $dependencyResolver = $this->getDependencyResolver();
         $binds = ['e200', 'Eleandro'];
@@ -48,7 +48,7 @@ class DependencyResolverTest extends TestCase
         $this->assertSame($binds, $dependencyResolver->getBinds());
     }
 
-    function testMakeWithClassName()
+    public function testMakeWithClassName()
     {
         $dependencyResolver = $this->getDependencyResolver();
 
@@ -59,9 +59,9 @@ class DependencyResolverTest extends TestCase
         $this->assertNotSame($instance1, $instance2);
     }
 
-    function testMakeWithCallback()
+    public function testMakeWithCallback()
     {
-        $dependencyResolver = $this->getDependencyResolver(function(){
+        $dependencyResolver = $this->getDependencyResolver(function () {
             return new Bar();
         });
 
@@ -70,7 +70,7 @@ class DependencyResolverTest extends TestCase
         $this->assertInstanceOf(Bar::class, $instance);
     }
 
-    function testMakeWithValue()
+    public function testMakeWithValue()
     {
         $dependencyResolver = $this->getDependencyResolver('e200');
 
@@ -79,14 +79,14 @@ class DependencyResolverTest extends TestCase
         $this->assertEquals('e200', $value);
     }
 
-    function testSetSingleton()
+    public function testSetSingleton()
     {
         $dependencyResolver = $this->getDependencyResolver();
 
         $this->assertEquals('e200', $dependencyResolver->setSingleton('e200'));
     }
 
-    function testGetHasSingleton()
+    public function testGetHasSingleton()
     {
         $dependencyResolver = $this->getDependencyResolver();
 
@@ -99,7 +99,7 @@ class DependencyResolverTest extends TestCase
         $this->assertTrue($dependencyResolver->hasSingleton());
     }
 
-    function testResolve()
+    public function testResolve()
     {
         $dependencyResolver = $this->getDependencyResolver();
 
@@ -108,7 +108,7 @@ class DependencyResolverTest extends TestCase
         $this->assertInstanceOf(Bar::class, $instance);
     }
 
-    function getDependencyResolver($entry = null)
+    public function getDependencyResolver($entry = null)
     {
         $containerMock = $this->createMock(IUnityContainer::class);
 

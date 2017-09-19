@@ -3,13 +3,11 @@
 namespace Unity\Component\Container\Contracts;
 
 /**
- * Interface IDuplicateIdException
+ * Interface IDuplicateIdException.
  *
- * @package Unity\Component\IoC\Exceptions
  *
  * @author Eleandro Duzentos <eleandro@inbox.ru>
  */
 interface IDuplicateIdException
 {
-
 }

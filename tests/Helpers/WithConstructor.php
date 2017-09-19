@@ -4,7 +4,7 @@ namespace Helpers;
 
 class WithConstructor
 {
-    function __construct()
+    public function __construct()
     {
     }
 }

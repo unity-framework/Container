@@ -4,7 +4,7 @@ namespace Helpers;
 
 class WithConstructorDependencies
 {
-    function __construct(WithConstructor $withConstructor, WithoutConstructor $withoutConstructor)
+    public function __construct(WithConstructor $withConstructor, WithoutConstructor $withoutConstructor)
     {
     }
 }
