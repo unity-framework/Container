@@ -3,12 +3,11 @@
 namespace Unity\Component\Container\Exceptions;
 
 use Exception;
-use Psr\Container\NotFoundExceptionInterface;
 use Throwable;
+use Psr\Container\NotFoundExceptionInterface;
 
 /**
  * Class NotFoundException.
- *
  *
  * @author Eleandro Duzentos <eleandro@inbox.ru>
  */
