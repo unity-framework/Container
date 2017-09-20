@@ -17,23 +17,22 @@ use Unity\Component\Container\Exceptions\MissingConstructorArgumentException;
  */
 class DependencyBuilder
 {
-    protected $autowiring = true;
-    protected $params = [];
-    protected $binds = [];
     protected $container;
+    protected $givenParameters     = [];
+    protected $containerBinds      = [];
 
     /**
      * DependencyBuilder constructor.
      *
-     * @param IContainer $container
+     * @param IContainer      $container
      * @param array           $params
      * @param array           $binds
      */
     public function __construct(IContainer $container, $params = null, $binds = null)
     {
         $this->container = $container;
-        $this->params = $params;
-        $this->binds = $binds;
+        $this->givenParameters = $params;
+        $this->containerBinds = $binds;
     }
 
     /**
@@ -43,9 +42,9 @@ class DependencyBuilder
      *
      * @return bool
      */
-    public function hasParam($parameterName)
+    public function hasGivenParameter($parameterName)
     {
-        return isset($this->params[$parameterName]);
+        return isset($this->givenParameters[$parameterName]);
     }
 
     /**
@@ -57,7 +56,7 @@ class DependencyBuilder
      */
     public function getParam($parameterName)
     {
-        return $this->params[$parameterName];
+        return $this->givenParameters[$parameterName];
     }
 
     /**
@@ -65,35 +64,35 @@ class DependencyBuilder
      *
      * @return array
      */
-    public function getParams()
+    public function getGivenParameters()
     {
-        return $this->params;
+        return $this->givenParameters;
     }
 
     /**
      * Checks if a bind exists.
      *
-     * @param $bindName
+     * @param $containerBindName
      *
      * @return bool
      */
-    public function hasBind($bindName)
+    public function hasContainerBind($containerBindName)
     {
-        return isset($this->binds[$bindName]) && $this->container->has($bindName);
+        return isset($this->containerBinds[$containerBindName]) && $this->container->has($containerBindName);
     }
 
     /**
      * Gets a bind.
      *
-     * @param $bindName
+     * @param $containerBindName
      *
      * @return mixed
      */
-    public function getBind($bindName)
+    public function getContainerBind($containerBindName)
     {
-        $registerName = $this->binds[$bindName];
+        $id = $this->containerBinds[$containerBindName];
 
-        return $this->container->get($registerName);
+        return $this->container->get($id);
     }
 
     /**
@@ -101,9 +100,9 @@ class DependencyBuilder
      *
      * @return array
      */
-    public function getBinds()
+    public function getContainerBinds()
     {
-        return $this->binds;
+        return $this->containerBinds;
     }
 
     /**
@@ -119,14 +118,14 @@ class DependencyBuilder
     /**
      * Constructs and returns a class instance.
      *
-     * @param $className
+     * @param $class
      *
      * @return object
      */
-    public function build($className)
+    public function build($class)
     {
-        /* Get a ReflectionInstance of the given class name */
-        $rc = $this->reflectClass($className);
+        /* Get a ReflectionClass instance of the given class */
+        $rc = $this->reflectClass($class);
 
         /*
          * We need to check if $rc `hasParametersOnConstructor()`,
@@ -137,7 +136,8 @@ class DependencyBuilder
         }
 
         /*
-        * If we're here, that means $rc has'nt a constructor, so we just...
+        * If we're here, that means $rc has'nt a constructor,
+        * so we just instantiate it...
         */
         return $this->createInstance($rc);
     }
@@ -219,30 +219,30 @@ class DependencyBuilder
      */
     public function getGivenConstructorParametersData($requiredParameters)
     {
-        $givenParametersData = [];
+        $givenData = [];
 
         /*
-         * For each required parameter, get the given para value
+         * For each required parameter, get the correspondent given data.
          */
         foreach ($requiredParameters as $param) {
             $paramName = $param->getName();
 
             /*
-             * If there's a bind for this param, get,
-             * store it and jump to the next parameter
+             * If there's a bind for this param, get and
+             * store it, then jump to the next parameter.
              */
-            if ($this->hasBind($paramName)) {
-                $givenParametersData[$paramName] = $this->getBind($paramName);
+            if ($this->hasContainerBind($paramName)) {
+                $givenData[$paramName] = $this->getContainerBind($paramName);
 
                 continue;
             }
 
             /*
-             * If there's an explicit param value
-             * for this param, get, store it and jump to the next parameter
+             * If there's an explicit parameter data for a variable
+             * on the constructor, get and store it, then jump to the next parameter.
              */
-            if ($this->hasParam($paramName)) {
-                $givenParametersData[$paramName] = $this->getParam($paramName);
+            if ($this->hasGivenParameter($paramName)) {
+                $givenData[$paramName] = $this->getParam($paramName);
 
                 continue;
             }
@@ -250,16 +250,19 @@ class DependencyBuilder
             $type = (string) $param->getType();
 
             /*
-             * If canAutowiring is enabled and the
-             * required param is a class, get and store it
-             * in the required parameters
+             * If canAutoInject is enabled and the
+             * required parameter is a class, get and store it in the $givenData[]
              */
-            if ($this->container->canAutowiring() && class_exists($type)) {
-                $givenParametersData[$paramName] = (new self($this->getContainer()))->build($type);
+            if ($this->container->canAutoInject() && class_exists($type)) {
+                $givenData[$paramName] = (new self($this->getContainer()))->build($type);
             }
         }
 
-        return $givenParametersData;
+        /*
+         * Now we have all available data
+         * to be used to construct a dependency.
+         */
+        return $givenData;
     }
 
     /**
