@@ -11,6 +11,7 @@ use Unity\Component\Container\Exceptions\ContainerException;
 /**
  * Class DependencyResolver.
  *
+ * Resolves a dependency.
  *
  * @author Eleandro Duzentos <eleandro@inbox.ru>
  */
@@ -19,14 +20,21 @@ class DependencyResolver implements IDependencyResolver
     protected $id;
     protected $entry;
     protected $params = [];
-    protected $binds = [];
+    protected $binds  = [];
     protected $singleton;
     protected $container;
 
+    /**
+     * DependencyResolver constructor.
+     *
+     * @param string     $id
+     * @param mixed      $entry
+     * @param IContainer $container
+     */
     public function __construct(string $id, $entry, IContainer $container)
     {
-        $this->id = $id;
-        $this->entry = $entry;
+        $this->id        = $id;
+        $this->entry     = $entry;
         $this->container = $container;
     }
 
@@ -41,7 +49,7 @@ class DependencyResolver implements IDependencyResolver
     }
 
     /**
-     * Gets resolver entry.
+     * Gets the resolver entry.
      *
      * @return mixed
      */
@@ -51,18 +59,8 @@ class DependencyResolver implements IDependencyResolver
     }
 
     /**
-     * Checks if resolver has a singleton instance.
-     *
-     * @return bool
-     */
-    public function hasSingleton()
-    {
-        return !is_null($this->singleton);
-    }
-
-    /**
-     * Resolves and returns dependency on the first call,
-     * and returns only the resolved dependency on subsequent calls.
+     * Resolves and returns a dependency on the first call.
+     * Returns only the resolved dependency on subsequent calls.
      *
      * @throws ContainerExceptionInterface
      *
@@ -94,7 +92,17 @@ class DependencyResolver implements IDependencyResolver
     }
 
     /**
-     * Resolves resolver dependency.
+     * Checks if the resolver has a singleton instance.
+     *
+     * @return bool
+     */
+    public function hasSingleton()
+    {
+        return !is_null($this->singleton);
+    }
+
+    /**
+     * Resolves the dependency resolver.
      *
      * @return mixed
      */
@@ -106,42 +114,70 @@ class DependencyResolver implements IDependencyResolver
     /**
      * Resolves and returns a new dependency on every call.
      *
-     * @param array $params
+     * @param array $parameters Parameters that will be used
+     * to construct the dependency.
+     * If a parameter already has a value given using the `give()`
+     * method, that parameters will be override by the parameter
+     * on the $parameters
      *
      * @throws ContainerException
+     * @throws Exception
      *
      * @return mixed
      */
-    public function make($params = [])
+    public function make($parameters = null)
     {
-        $instance = null;
         $entry = $this->getEntry();
 
-        if (!empty($params)) {
-            $params = array_merge($params, $this->params);
+        /*
+         * This will merge user givens parameters using the `give()` method
+         * with $parameters.
+         *
+         * Elements on the first array with the same key on the second array
+         * will be override with the second array data.
+         */
+        if (!is_null($parameters)) {
+            $parameters = array_merge($this->params, $parameters);
         }
 
+        /*
+         * If our entry is a string and is an existing class,
+         * let's build it :)
+         */
         if (is_string($entry) && class_exists($entry)) {
             try {
                 return (new DependencyBuilder(
                     $this->container,
-                    $params,
+                    $parameters,
                     $this->binds
                 ))->build($entry);
             } catch (Exception $ex) {
+                if($ex->getCode() == 0200)
+                    throw $ex;
+
                 throw new ContainerException("An error occurs while trying to build \" {$this->id} \".\nError: ".$ex->getMessage(), $ex->getCode());
             }
         }
 
+        /*
+         * If our entry is a callable, lets call it and return the output.
+         */
         if (is_callable($entry)) {
             return call_user_func($entry, $this->container);
         }
 
+
+        /*
+         * If we're here, that means our entry it's
+         * not a class, or either a callable.
+         *
+         * In this case, we return the entry data.
+         */
         return $entry;
     }
 
     /**
-     * Parameters to be given to the constructor on build time.
+     * Parameters that will be given to the constructor on build time.
      *
      * @param array $params
      *
@@ -159,7 +195,7 @@ class DependencyResolver implements IDependencyResolver
      *
      * @return array
      */
-    public function getParams()
+    public function getGivenParams()
     {
         return $this->params;
     }

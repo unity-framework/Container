@@ -63,13 +63,13 @@ interface IDependencyResolver
     /**
      * Resolves and returns a new dependency on every call.
      *
-     * @param null $params
+     * @param null $parameters
      *
      * @throws ContainerException
      *
      * @return mixed
      */
-    public function make($params = null);
+    public function make($parameters = null);
 
     /**
      * Parameters to be given to the constructor on build time.
@@ -85,7 +85,7 @@ interface IDependencyResolver
      *
      * @return array
      */
-    public function getParams();
+    public function getGivenParams();
 
     /**
      * Binds others dependencies on container to this dependency.
