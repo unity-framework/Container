@@ -12,22 +12,30 @@ use Unity\Component\Container\Contracts\IContainer;
 use Unity\Component\Container\Dependency\DependencyBuilder;
 use Unity\Component\Container\Exceptions\MissingConstructorArgumentException;
 
+/**
+ * @author Eleandro Duzentos <eleandro@inbox.ru>
+ */
 class DependencyBuilderTest extends TestCase
 {
-    public function testGetHasParams()
+    /**
+     * @covers DependencyBuilder::getGivenParameter()
+     * @covers DependencyBuilder::hasGivenParameter()
+     * @covers DependencyBuilder::getGivenParameters()
+     */
+    public function testGetHasGivenParameters()
     {
         $instanceBuilder = $this->getDependencyBuilder();
 
-        $this->assertFalse($instanceBuilder->hasParam('name'));
+        $this->assertFalse($instanceBuilder->hasGivenParameter('name'));
 
         $instanceBuilder = $this->getDependencyBuilder(null, ['name' => 'Lorem Ipsum']);
 
-        $this->assertTrue($instanceBuilder->hasParam('name'));
+        $this->assertTrue($instanceBuilder->hasGivenParameter('name'));
         $name = $instanceBuilder->getParam('name');
 
         $this->assertEquals('Lorem Ipsum', $name);
 
-        $params = $instanceBuilder->getParams();
+        $params = $instanceBuilder->getGivenParameters();
         $this->assertTrue(is_array($params));
         $this->assertNotEmpty($params);
     }
@@ -43,11 +51,16 @@ class DependencyBuilderTest extends TestCase
         $this->assertInstanceOf(IContainer::class, $container);
     }
 
-    public function testGetHasParamBinds()
+    /**
+     * @covers DependencyBuilder::getContainerBind()
+     * @covers DependencyBuilder::hasContainerBind()
+     * @covers DependencyBuilder::getContainerBinds()
+     */
+    public function testGetHasContainerBinds()
     {
         $dependencyBuilder = $this->getDependencyBuilder();
 
-        $this->assertFalse($dependencyBuilder->hasBind('foo'));
+        $this->assertFalse($dependencyBuilder->hasContainerBind('foo'));
 
         $containerMock = $this->createMock(IContainer::class);
 
@@ -63,11 +76,11 @@ class DependencyBuilderTest extends TestCase
 
         $dependencyBuilder = $this->getDependencyBuilder($containerMock, null, ['foo' => 'bar']);
 
-        $this->assertTrue($dependencyBuilder->hasBind('foo'));
-        $bind = $dependencyBuilder->getBind('foo');
+        $this->assertTrue($dependencyBuilder->hasContainerBind('foo'));
+        $bind = $dependencyBuilder->getContainerBind('foo');
 
         $this->assertEquals('bar', $bind);
-        $binds = $dependencyBuilder->getBinds();
+        $binds = $dependencyBuilder->getContainerBinds();
 
         $this->assertInternalType('array', $binds);
         $this->assertNotEmpty($binds);
@@ -101,19 +114,22 @@ class DependencyBuilderTest extends TestCase
         $this->assertEquals(false, $dependencyBuilder->hasParametersOnConstructor($rc));
     }
 
-    public function testGetParametersRequiredByTheConstructor()
+    public function testGetParametersRequiredToConstructReflectedClass()
     {
         $dependencyBuilder = $this->getDependencyBuilder();
 
         $rc = $this->reflectClassForTest(WithConstructorDependencies::class);
         $params = $dependencyBuilder->getParametersRequiredToConstructReflectedClass($rc);
-        $this->assertTrue(is_array($params));
+        $this->assertInternalType('array', $params);
         $this->assertCount(2, $params);
         $this->assertInstanceOf(ReflectionParameter::class, $params[0]);
         $this->assertInstanceOf(ReflectionParameter::class, $params[1]);
     }
 
-    public function testGetConstructorParametersValuesWithoutGivenParametersValues()
+    /**
+     * @covers DependencyBuilder::getGivenConstructorParametersData()
+     */
+    public function testGetGivenConstructorParametersDataWithoutGivenParametersData()
     {
         $dependencyBuilder = $this->getDependencyBuilder();
 
@@ -124,7 +140,10 @@ class DependencyBuilderTest extends TestCase
         $this->assertEmpty($paramsValues);
     }
 
-    public function testGetConstructorParametersValuesWithProvidedParametersValues()
+    /**
+     * @covers DependencyBuilder::getGivenConstructorParametersData()
+     */
+    public function testGetGivenConstructorParametersDataWithProvidedParametersData()
     {
         $dependencyBuilder = $this->getDependencyBuilder(null, [
             'param1' => 1,
@@ -141,6 +160,9 @@ class DependencyBuilderTest extends TestCase
         $this->assertEquals(1, $paramsValues['param2']);
     }
 
+    /**
+     * @covers DependencyBuilder::getGivenConstructorParametersData()
+     */
     public function testWithConstructorDependencies()
     {
         $dependencyBuilder = $this->getDependencyBuilder();
@@ -158,6 +180,9 @@ class DependencyBuilderTest extends TestCase
         $this->assertInstanceOf(WithoutConstructor::class, $givenParametersData['withoutConstructor']);
     }
 
+    /**
+     * @covers DependencyBuilder::getGivenConstructorParametersData()
+     */
     public function testWithConstructorParameterBind()
     {
         $dependencyBuilder = $this->getDependencyBuilder();
@@ -259,7 +284,7 @@ class DependencyBuilderTest extends TestCase
 
         $containerMock
             ->expects($this->any())
-            ->method('canAutowiring')
+            ->method('canAutoInject')
             ->willReturn(true);
 
         return new DependencyBuilder($container ?? $containerMock, $params, $binds);

@@ -34,7 +34,7 @@ class DependencyResolverTest extends TestCase
         $instance = $dependencyResolver->give($params);
         $this->assertSame($dependencyResolver, $instance);
 
-        $this->assertSame($params, $dependencyResolver->getParams());
+        $this->assertSame($params, $dependencyResolver->getGivenParams());
     }
 
     public function testBindGetBinds()
@@ -114,7 +114,7 @@ class DependencyResolverTest extends TestCase
 
         $containerMock
             ->expects($this->any())
-            ->method('canAutowiring')
+            ->method('enableAutoInject')
             ->willReturn(true);
 
         return new DependencyResolver(self::ID, $entry ?? Bar::class, $containerMock);
