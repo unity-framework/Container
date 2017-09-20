@@ -7,6 +7,7 @@ use Unity\Component\Container\Contracts\IContainer;
 /**
  * Class DependencyResolverFactory.
  *
+ * Makes DependencyResolver::class instances
  *
  * @author Eleandro Duzentos <eleandro@inbox.ru>
  */
