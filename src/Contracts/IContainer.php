@@ -5,6 +5,7 @@ namespace Unity\Component\Container\Contracts;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
+use Unity\Component\Container\Container;
 use Unity\Component\Container\Exceptions\DuplicateIdException;
 use Unity\Component\Container\Exceptions\NotFoundException;
 
@@ -17,44 +18,10 @@ use Unity\Component\Container\Exceptions\NotFoundException;
 interface IContainer extends ContainerInterface
 {
     /**
-     * Resolves and returns the dependency registered on the first call.
-     * Returns only the resolved dependency on subsequent calls.
-     *
-     * @param string $id Identifier of the dependency resolver.
-     *
-     * @throws NotFoundExceptionInterface
-     * @throws ContainerExceptionInterface
-     *
-     * @return mixed
-     */
-    public function get($id);
-
-    /**
-     * Checks if the container has a dependency resolver for the given $id.
-     *
-     * @param string $id Identifier for the resolver.
-     *
-     * @return bool
-     */
-    public function has($id);
-
-    /**
-     * Resolves and returns the registered dependency on every call.
-     *
-     * @param $id
-     * @param null $params
-     *
-     * @throws NotFoundException
-     *
-     * @return mixed
-     */
-    public function make($id, $params = null);
-
-    /**
      * Register a dependency resolver.
      *
      * @param string $id
-     * @param mixed  $entry The content that will be used to generate the dependency.
+     * @param mixed  $entry Content that will be used to generate the dependency.
      *
      * @throws DuplicateIdException
      *
@@ -69,17 +36,51 @@ interface IContainer extends ContainerInterface
      *
      * @throws NotFoundException
      *
-     * @return IContainer
+     * @return Container
      */
     public function unregister($id);
 
     /**
+     * Resolves and returns the dependency on the first call.
+     * Returns the resolved dependency on subsequent calls.
+     *
+     * @param string $id Dependency resolver identifier.
+     *
+     * @throws NotFoundExceptionInterface
+     * @throws ContainerExceptionInterface
+     *
+     * @return mixed
+     */
+    public function get($id);
+
+    /**
+     * Checks if the container has a dependency resolver for the given $id.
+     *
+     * @param string $id Dependency resolver identifier.
+     *
+     * @return bool
+     */
+    public function has($id);
+
+    /**
+     * Resolves and returns the registered dependency on every call.
+     *
+     * @param string     $id     Dependency resolver identifier.
+     * @param array|null $params
+     *
+     * @throws NotFoundException
+     *
+     * @return mixed
+     */
+    public function make($id, $params = null);
+
+    /**
      * Replaces a registered resolver.
      *
-     * This method does'nt replaces dependencies already resolved by this container.
+     * This method does'nt replaces dependencies already resolved by the container.
      *
      * @param string $id
-     * @param mixed  $entry The content that will be used to resolve the dependency.
+     * @param mixed  $entry Content that will be used to resolve the dependency.
      *
      * @return IDependencyResolver
      */
@@ -105,16 +106,26 @@ interface IContainer extends ContainerInterface
     public function setDependencyResolver($id, IDependencyResolver $resolver);
 
     /**
-     * Enable|Disable autowiring.
+     * Enable|Disable auto inject.
+     *
+     * Tells the container if it should try auto inject
+     * classes constructor dependencies.
      *
      * @param bool $enable
      */
-    public function enableAutowiring($enable);
+    public function enableAutoInject($enable);
 
     /**
-     * Checks if autowiring is enabled.
+     * Checks if auto inject is enabled.
      *
      * @return bool
      */
-    public function canAutowiring();
+    public function canAutoInject();
+
+    /**
+     * @param $id
+     *
+     * @throws NotFoundException
+     */
+    public function throwNotFoundException($id);
 }
