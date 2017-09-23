@@ -13,7 +13,14 @@ use Unity\Component\Container\Contracts\IContainer;
  */
 class DependencyResolverFactory
 {
-    public static function Make($id, $entry, IContainer $container)
+    /**
+     * @param $id
+     * @param $entry
+     * @param IContainer $container
+     *
+     * @return DependencyResolver
+     */
+    public static function make($id, $entry, IContainer $container)
     {
         return new DependencyResolver($id, $entry, $container);
     }
