@@ -6,12 +6,12 @@ use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 use Unity\Component\Container\Container;
+use Unity\Component\Container\Dependency\DependencyResolver;
 use Unity\Component\Container\Exceptions\DuplicateIdException;
 use Unity\Component\Container\Exceptions\NotFoundException;
 
 /**
  * Interface IContainer.
- *
  *
  * @author Eleandro Duzentos <eleandro@inbox.ru>
  */
@@ -25,7 +25,7 @@ interface IContainer extends ContainerInterface
      *
      * @throws DuplicateIdException
      *
-     * @return IDependencyResolver
+     * @return DependencyResolver
      */
     public function register($id, $entry);
 
@@ -39,6 +39,28 @@ interface IContainer extends ContainerInterface
      * @return Container
      */
     public function unregister($id);
+
+    /**
+     * @param string $interface
+     * @param mixed $entry
+     *
+     * @return Container
+     */
+    public function bind(string $interface, $entry);
+
+    /**
+     * @param $interface
+     *
+     * @return mixed
+     */
+    public function getBind(string $interface);
+
+    /**
+     * @param $type
+     *
+     * @return bool
+     */
+    public function hasBind(string $type);
 
     /**
      * Resolves and returns the dependency on the first call.
@@ -82,28 +104,9 @@ interface IContainer extends ContainerInterface
      * @param string $id
      * @param mixed  $entry Content that will be used to resolve the dependency.
      *
-     * @return IDependencyResolver
+     * @return DependencyResolver
      */
     public function replace($id, $entry);
-
-    /**
-     * Gets the resolver.
-     *
-     * @param string $id Identifier of the resolver to get.
-     *
-     * @return mixed
-     */
-    public function getDependencyResolver($id);
-
-    /**
-     * Sets the resolver.
-     *
-     * @param string              $id       Identifier of the resolver to get.
-     * @param IDependencyResolver $resolver
-     *
-     * @return IDependencyResolver
-     */
-    public function setDependencyResolver($id, IDependencyResolver $resolver);
 
     /**
      * Enable|Disable auto inject.
@@ -121,11 +124,4 @@ interface IContainer extends ContainerInterface
      * @return bool
      */
     public function canAutoInject();
-
-    /**
-     * @param $id
-     *
-     * @throws NotFoundException
-     */
-    public function throwNotFoundException($id);
 }
