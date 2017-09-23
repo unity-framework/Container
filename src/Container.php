@@ -4,8 +4,9 @@ namespace Unity\Component\Container;
 
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
-use Unity\Component\Container\Contracts\IDependencyResolver;
 use Unity\Component\Container\Contracts\IContainer;
+use Unity\Component\Container\Bind\BindResolverFactory;
+use Unity\Component\Container\Dependency\DependencyResolver;
 use Unity\Component\Container\Dependency\DependencyResolverFactory;
 use Unity\Component\Container\Exceptions\DuplicateIdException;
 use Unity\Component\Container\Exceptions\NotFoundException;
@@ -19,7 +20,7 @@ use Unity\Component\Container\Exceptions\NotFoundException;
  */
 class Container implements IContainer
 {
-    protected $needs      = [];
+    protected $binds      = [];
     protected $resolvers  = [];
     protected $autoInject = true;
 
@@ -31,7 +32,7 @@ class Container implements IContainer
      *
      * @throws DuplicateIdException
      *
-     * @return IDependencyResolver
+     * @return DependencyResolver
      */
     public function register($id, $entry)
     {
@@ -39,7 +40,7 @@ class Container implements IContainer
             throw new DuplicateIdException("The container already has a dependency resolver for \"{$id}\".");
         }
 
-        return $this->setDependencyResolver($id, DependencyResolverFactory::make($id, $entry, $this));
+        return $this->resolvers[$id] = DependencyResolverFactory::make($id, $entry, $this);
     }
 
     /**
@@ -63,6 +64,21 @@ class Container implements IContainer
     }
 
     /**
+     * Replaces a registered resolver.
+     *
+     * This method does'nt replaces dependencies already resolved by the container.
+     *
+     * @param string $id
+     * @param mixed  $entry Content that will be used to resolve the dependency.
+     *
+     * @return DependencyResolver
+     */
+    public function replace($id, $entry)
+    {
+        return $this->resolvers[$id] = DependencyResolverFactory::make($id, $entry, $this);
+    }
+
+    /**
      * Resolves and returns the dependency on the first call.
      * Returns the resolved dependency on subsequent calls.
      *
@@ -76,7 +92,7 @@ class Container implements IContainer
     public function get($id)
     {
         if ($this->has($id)) {
-            return $this->getDependencyResolver($id)->getSingleton();
+            return $this->resolvers[$id]->getSingleton();
         }
 
         $this->throwNotFoundException($id);
@@ -107,50 +123,53 @@ class Container implements IContainer
     public function make($id, $params = null)
     {
         if ($this->has($id)) {
-            return $this->getDependencyResolver($id)->make($params);
+            return $this->resolvers[$id]->make($params);
         }
 
         $this->throwNotFoundException($id);
     }
 
     /**
-     * Replaces a registered resolver.
+     * @param string $interface
+     * @param mixed $entry
      *
-     * This method does'nt replaces dependencies already resolved by the container.
+     * Binds a concrete class to an interface.
      *
-     * @param string $id
-     * @param mixed  $entry Content that will be used to resolve the dependency.
+     * Every time
      *
-     * @return IDependencyResolver
+     * @return Container
      */
-    public function replace($id, $entry)
+    public function bind(string $interface, $entry)
     {
-        return $this->setDependencyResolver($id, DependencyResolverFactory::make($id, $entry, $this));
+        $this->binds[$interface] = BindResolverFactory::make($interface, $entry, $this);
+
+        return $this;
     }
 
     /**
-     * Gets the resolver.
-     *
-     * @param string $id Identifier of the resolver to get.
+     * @param string $interface
      *
      * @return mixed
+     *
+     * @throws NotFoundException
      */
-    public function getDependencyResolver($id)
+    public function getBind(string $interface)
     {
-        return $this->resolvers[$id];
+        if ($this->hasBind($interface)) {
+            return $this->binds[$interface]->resolve();
+        }
+
+        throw new NotFoundException("No resolver was bounded to interface \"{$interface}\" on the container.");
     }
 
     /**
-     * Sets the resolver.
+     * @param $interface
      *
-     * @param string              $id       Identifier of the resolver to get.
-     * @param IDependencyResolver $resolver
-     *
-     * @return IDependencyResolver
+     * @return bool
      */
-    public function setDependencyResolver($id, IDependencyResolver $resolver)
+    public function hasBind(string $interface)
     {
-        return $this->resolvers[$id] = $resolver;
+        return isset($this->binds[$interface]);
     }
 
     /**
@@ -185,7 +204,7 @@ class Container implements IContainer
      *
      * @throws NotFoundException
      */
-    public function throwNotFoundException($id)
+    protected function throwNotFoundException($id)
     {
         throw new NotFoundException("No dependency resolver was founded for \"{$id}\" on the container.");
     }
