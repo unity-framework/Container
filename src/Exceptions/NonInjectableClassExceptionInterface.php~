@@ -1,8 +1,0 @@
-<?php
-
-namespace Unity\IoC\Exception;
-
-interface NonInjectableClassExceptionInterface
-{
-
-}
