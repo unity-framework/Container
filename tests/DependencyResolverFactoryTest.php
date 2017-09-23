@@ -1,8 +1,8 @@
 <?php
 
 use PHPUnit\Framework\TestCase;
-use Unity\Component\Container\Contracts\IDependencyResolver;
 use Unity\Component\Container\Contracts\IContainer;
+use Unity\Component\Container\Dependency\DependencyResolver;
 use Unity\Component\Container\Dependency\DependencyResolverFactory;
 
 /**
@@ -15,8 +15,8 @@ class DependencyResolverFactoryTest extends TestCase
         $containerMock = $this->createMock(IContainer::class);
 
         $this->assertInstanceOf(
-            IDependencyResolver::class,
-            DependencyResolverFactory::Make('testId', 'e200', $containerMock)
+            DependencyResolver::class,
+            DependencyResolverFactory::make('testId', 'e200', $containerMock)
         );
     }
 }
