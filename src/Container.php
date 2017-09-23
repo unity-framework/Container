@@ -30,9 +30,9 @@ class Container implements IContainer
      * @param string $id
      * @param mixed  $entry Content that will be used to generate the dependency.
      *
-     * @throws DuplicateIdException
-     *
      * @return DependencyResolver
+     *
+     * @throws DuplicateIdException
      */
     public function register($id, $entry)
     {
@@ -135,7 +135,12 @@ class Container implements IContainer
      *
      * Binds a concrete class to an interface.
      *
-     * Every time
+     * Every time a class needs an argument of $interface type,
+     * the $entry will be resolved, and the value will be injected.
+     *
+     * Different of the register method, this will not throw an exception
+     * if you register an bind with the same key twice, instead, it will
+     * replace the old bind by this new one.
      *
      * @return Container
      */
