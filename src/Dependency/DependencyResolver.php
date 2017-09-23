@@ -4,25 +4,24 @@ namespace Unity\Component\Container\Dependency;
 
 use Exception;
 use Psr\Container\ContainerExceptionInterface;
-use Unity\Component\Container\Contracts\IDependencyResolver;
 use Unity\Component\Container\Contracts\IContainer;
+use Unity\Component\Container\Contracts\IResolver;
 use Unity\Component\Container\Exceptions\ContainerException;
 
 /**
  * Class DependencyResolver.
  *
- * Resolves a dependency.
+ * Represents and resolves a dependency.
  *
  * @author Eleandro Duzentos <eleandro@inbox.ru>
  */
-class DependencyResolver implements IDependencyResolver
+class DependencyResolver implements IResolver
 {
     protected $id;
     protected $entry;
-    protected $params = [];
-    protected $binds  = [];
-    protected $singleton;
     protected $container;
+    protected $singleton;
+    protected $constructorData = [];
 
     /**
      * DependencyResolver constructor.
@@ -60,7 +59,7 @@ class DependencyResolver implements IDependencyResolver
 
     /**
      * Resolves and returns a dependency on the first call.
-     * Returns only the resolved dependency on subsequent calls.
+     * Only returns the resolved dependency on subsequent calls.
      *
      * @throws ContainerExceptionInterface
      *
@@ -102,7 +101,7 @@ class DependencyResolver implements IDependencyResolver
     }
 
     /**
-     * Resolves the dependency resolver.
+     * Resolves the resolver dependency.
      *
      * @return mixed
      */
@@ -114,7 +113,7 @@ class DependencyResolver implements IDependencyResolver
     /**
      * Resolves and returns a new dependency on every call.
      *
-     * @param array $parameters Parameters that will be used
+     * @param array $constructorData Parameters that will be used
      * to construct the dependency.
      * If a parameter already has a value given using the `give()`
      * method, that parameters will be override by the parameter
@@ -125,7 +124,7 @@ class DependencyResolver implements IDependencyResolver
      *
      * @return mixed
      */
-    public function make($parameters = null)
+    public function make($constructorData = null)
     {
         $entry = $this->getEntry();
 
@@ -136,8 +135,8 @@ class DependencyResolver implements IDependencyResolver
          * Elements on the first array with the same key on the second array
          * will be override with the second array data.
          */
-        if (!is_null($parameters)) {
-            $parameters = array_merge($this->params, $parameters);
+        if (!is_null($constructorData)) {
+            $constructorData = array_merge($this->constructorData, $constructorData);
         }
 
         /*
@@ -148,8 +147,7 @@ class DependencyResolver implements IDependencyResolver
             try {
                 return (new DependencyBuilder(
                     $this->container,
-                    $parameters,
-                    $this->binds
+                    $constructorData
                 ))->build($entry);
             } catch (Exception $ex) {
                 if($ex->getCode() == 0200)
@@ -185,7 +183,7 @@ class DependencyResolver implements IDependencyResolver
      */
     public function give(array $params)
     {
-        $this->params = $params;
+        $this->constructorData = $params;
 
         return $this;
     }
@@ -197,7 +195,7 @@ class DependencyResolver implements IDependencyResolver
      */
     public function getGivenParams()
     {
-        return $this->params;
+        return $this->constructorData;
     }
 
     /**
