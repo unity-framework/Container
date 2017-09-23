@@ -1,10 +1,12 @@
 <?php
 
 use Helpers\Bar;
+use Helpers\Fake;
 use Helpers\Foo;
 use Helpers\Foobar;
+use Helpers\IFoo;
 use PHPUnit\Framework\TestCase;
-use Unity\Component\Container\Contracts\IDependencyResolver;
+use Unity\Component\Container\Contracts\IContainer;
 use Unity\Component\Container\Dependency\DependencyResolver;
 use Unity\Component\Container\Exceptions\DuplicateIdException;
 use Unity\Component\Container\Exceptions\NotFoundException;
@@ -38,6 +40,26 @@ class ContainerTest extends TestCase
     }
 
     /**
+     * @covers Container::bind()
+     * @covers Container::hasBind()
+     * @covers Container::getBind()
+     */
+    public function testHasGetRegisterDataForType()
+    {
+        $container = $this->getContainer();
+
+        $this->assertFalse($container->hasBind(IFoo::class));
+        $instance = $container->bind(IFoo::class, function (){
+            return new Foo(new Bar());
+        });
+
+        $this->assertInstanceOf(IContainer::class, $instance);
+        $data = $container->getBind(IFoo::class);
+
+        $this->assertInstanceOf(IFoo::class, $data);
+    }
+
+    /**
      * Checks if the container throws an exception
      * if someone tries to register 2 dependencies with
      * the same id.
@@ -62,6 +84,24 @@ class ContainerTest extends TestCase
 
         $this->assertInstanceOf(Bar::class, $instance);
         $this->assertSame($instance, $container->get('bar'));
+    }
+
+    /**
+     * @covers Container::bind()
+     */
+    public function testGetBind()
+    {
+        $container = $this->getContainer();
+
+        $container->register('foo', Foo::class);
+        $container->bind(IFoo::class, function ($container) {
+            return $container->get('foo');
+        });
+
+        $container->register('foobar', Foobar::class);
+        $instance = $container->get('foobar');
+
+        $this->assertInstanceOf(Foobar::class, $instance);
     }
 
     /**
@@ -117,31 +157,15 @@ class ContainerTest extends TestCase
     }
 
     /**
-     * @covers Container::enableAutoInject()
-     * @covers Container::canAutoInject()
-     */
-    public function testSetGetResolver()
-    {
-        $dependencyResolverMock = $this->createMock(IDependencyResolver::class);
-
-        $container = $this->getContainer();
-
-        $dependencyResolver = $container->setDependencyResolver('id', $dependencyResolverMock);
-
-        $this->assertSame($dependencyResolverMock, $dependencyResolver);
-        $this->assertSame($dependencyResolverMock, $container->getDependencyResolver('id'));
-    }
-
-    /**
      * @covers Container::throwNotFoundException()
      */
     public function testThrowNotFoundException()
     {
         $this->expectException(NotFoundException::class);
 
-        $container = $this->getContainer();
+        $fake = new Fake(new Container());
 
-        $container->throwNotFoundException(null);
+        $fake->throwNotFoundException(null);
     }
 
     public function testEnableCanAutoInject()
@@ -156,16 +180,6 @@ class ContainerTest extends TestCase
         $this->assertFalse($container->canAutoInject());
         $container->enableAutoInject(true);
         $this->assertTrue($container->canAutoInject());
-    }
-
-    public function testGetDependencyThatNeedsAnObjectOfTypeInterface()
-    {
-        $this->markTestSkipped();
-
-        $container = $this->getContainer();
-
-        $container->register('foobar', Foobar::class);
-        $container->get('foobar');
     }
 
     public function getContainer()
