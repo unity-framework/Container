@@ -4,14 +4,14 @@ namespace Unity\Component\Container\Exceptions;
 
 use Exception;
 use Throwable;
-use Unity\Component\Container\Contracts\IDuplicateIdException;
+use Psr\Container\ContainerExceptionInterface;
 
 /**
  * Class DuplicateDependencyNameException.
  *
  * @author Eleandro Duzentos <eleandro@inbox.ru>
  */
-class DuplicateIdException extends Exception implements IDuplicateIdException
+class DuplicateIdException extends Exception implements ContainerExceptionInterface
 {
     public function __construct($message = '', $code = 0, Throwable $previous = null)
     {

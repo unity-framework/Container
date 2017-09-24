@@ -21,6 +21,7 @@ class DependencyResolver implements IResolver
     protected $entry;
     protected $container;
     protected $singleton;
+    protected $binds           = [];
     protected $constructorData = [];
 
     /**
@@ -119,9 +120,6 @@ class DependencyResolver implements IResolver
      * method, that parameters will be override by the parameter
      * on the $parameters
      *
-     * @throws ContainerException
-     * @throws Exception
-     *
      * @return mixed
      */
     public function make($constructorData = null)
@@ -144,17 +142,7 @@ class DependencyResolver implements IResolver
          * let's build it :)
          */
         if (is_string($entry) && class_exists($entry)) {
-            try {
-                return (new DependencyBuilder(
-                    $this->container,
-                    $constructorData
-                ))->build($entry);
-            } catch (Exception $ex) {
-                if($ex->getCode() == 0200)
-                    throw $ex;
-
-                throw new ContainerException("An error occurs while trying to build \" {$this->id} \".\nError: ".$ex->getMessage(), $ex->getCode());
-            }
+            return (new DependencyBuilder($this->container, $constructorData))->build($entry);
         }
 
         /*
