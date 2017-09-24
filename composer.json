@@ -1,6 +1,6 @@
 {
     "name": "unity/container",
-    "version": "1.0.0",
+    "version": "1.0.0-beta.3",
     "description": "The Unity framework psr-11 implementation",
     "type": "library",
     "require": {
@@ -21,8 +21,7 @@
     "prefer-stable" : true,
     "autoload": {
 	    "psr-4": {
-            "Unity\\Component\\Container\\": "src/",
-            "Helpers\\": "tests/Helpers"
+            "Unity\\Component\\Container\\": "src/"
 	    }
     },
     "autoload-dev": {
