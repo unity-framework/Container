@@ -2,8 +2,11 @@
 
 namespace Unity\Component\Container;
 
+use ArrayAccess;
+use Countable;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
+
 use Unity\Component\Container\Contracts\IContainer;
 use Unity\Component\Container\Bind\BindResolverFactory;
 use Unity\Component\Container\Dependency\DependencyResolver;
@@ -18,7 +21,7 @@ use Unity\Component\Container\Exceptions\NotFoundException;
  *
  * @author Eleandro Duzentos <eleandro@inbox.ru>
  */
-class Container implements IContainer
+class Container implements IContainer, ArrayAccess, Countable
 {
     protected $binds      = [];
     protected $resolvers  = [];
@@ -164,7 +167,7 @@ class Container implements IContainer
             return $this->binds[$interface]->resolve();
         }
 
-        throw new NotFoundException("No resolver was bounded to interface \"{$interface}\" on the container.");
+        throw new NotFoundException("No resolver was bound to interface \"{$interface}\" on the container.");
     }
 
     /**
@@ -212,5 +215,72 @@ class Container implements IContainer
     protected function throwNotFoundException($id)
     {
         throw new NotFoundException("No dependency resolver was founded for \"{$id}\" on the container.");
+    }
+
+    function __get($name)
+    {
+        return $this->get($name);
+    }
+
+    function __set($name, $value)
+    {
+        $this->register($name, $value);
+    }
+
+    /**
+     * Counts and returns the number of registered
+     * resolvers on this container
+     *
+     * return int
+     */
+    public function count()
+    {
+        return count($this->resolvers);
+    }
+
+    /**
+     * Whether a offset exists.
+     *
+     * @param string $offset
+     *
+     * @return bool
+     */
+    public function offsetExists($offset)
+    {
+        return isset($this->resolvers[$offset]);
+    }
+
+    /**
+     * Resolver offset to retrieve.
+     *
+     * @param string $offset
+     *
+     * @return mixed
+     */
+    public function offsetGet($offset)
+    {
+        return $this->resolvers[$offset];
+    }
+
+    /**
+     * Offset to set.
+     *
+     * @param string $offset
+     *
+     * @param mixed $value
+     */
+    public function offsetSet($offset, $value)
+    {
+        $this->resolvers[$offset] = $value;
+    }
+
+    /**
+     * Offset to unset.
+     *
+     * @param string $offset
+     */
+    public function offsetUnset($offset)
+    {
+        unset($this->resolvers[$offset]);
     }
 }
