@@ -214,7 +214,7 @@ class Container implements IContainer, ArrayAccess, Countable
      */
     protected function throwNotFoundException($id)
     {
-        throw new NotFoundException("No dependency resolver was founded for \"{$id}\" on the container.");
+        throw new NotFoundException("No dependency resolver was founded for id \"{$id}\" on the container.");
     }
 
     function __get($name)
