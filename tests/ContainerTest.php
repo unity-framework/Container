@@ -86,6 +86,13 @@ class ContainerTest extends TestCase
         $this->assertSame($instance, $container->get('bar'));
     }
 
+    public  function testHasBind()
+    {
+        $container = $this->getContainer();
+
+        $this->assertFalse($container->hasBind(''));
+    }
+
     /**
      * @covers Container::bind()
      */
@@ -102,6 +109,19 @@ class ContainerTest extends TestCase
         $instance = $container->get('foobar');
 
         $this->assertInstanceOf(Foobar::class, $instance);
+    }
+
+    /**
+     * @covers Container::getBind()
+     */
+    public function testNotFoundExceptionOnGetBind()
+    {
+        $this->expectException(NotFoundException::class);
+
+        $container = $this->getContainer();
+
+        $this->assertFalse($container->hasBind(''));
+        $container->getBind('');
     }
 
     /**
@@ -180,6 +200,48 @@ class ContainerTest extends TestCase
         $this->assertFalse($container->canAutoInject());
         $container->enableAutoInject(true);
         $this->assertTrue($container->canAutoInject());
+    }
+
+    /**
+     * @covers Container::__call()
+     */
+    public function test__setget()
+    {
+        $container = $this->getContainer();
+
+        $container->bar = Bar::class;
+
+        $this->assertInstanceOf(Bar::class, $container->bar);
+    }
+
+    public function testCount()
+    {
+        $container = $this->getContainer();
+
+        $this->assertInstanceOf(Countable::class, $container);
+
+        $container->register('a', null);
+        $container->register('b', null);
+
+        $this->assertCount(2, $container);
+    }
+
+    /**
+     * @covers Container::__call()
+     */
+    public function testArrayAccess()
+    {
+        $container = $this->getContainer();
+
+        $this->assertInstanceOf(ArrayAccess::class, $container);
+
+        $this->assertArrayNotHasKey('e200', $container);
+
+        $container['e200'] = 'Eleandro Duzentos';
+
+        $this->assertArrayHasKey('e200', $container);
+
+        $this->assertEquals('Eleandro Duzentos', $container['e200']);
     }
 
     public function getContainer()
