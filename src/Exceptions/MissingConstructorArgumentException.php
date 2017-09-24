@@ -4,7 +4,7 @@ namespace Unity\Component\Container\Exceptions;
 
 use Exception;
 use Throwable;
-use Unity\Component\Container\Contracts\IMissingConstructorArgumentException;
+use Psr\Container\ContainerExceptionInterface;
 
 /**
  * Class MissingConstructorArgumentException.
@@ -12,9 +12,9 @@ use Unity\Component\Container\Contracts\IMissingConstructorArgumentException;
  *
  * @author Eleandro Duzentos <eleandro@inbox.ru>
  */
-class MissingConstructorArgumentException extends Exception implements IMissingConstructorArgumentException
+class MissingConstructorArgumentException extends Exception implements ContainerExceptionInterface
 {
-    public function __construct($message = '', $code = 0200, Throwable $previous = null)
+    public function __construct($message = '', $code = 0, Throwable $previous = null)
     {
         parent::__construct($message, $code, $previous);
     }
