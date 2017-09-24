@@ -9,7 +9,6 @@ use Unity\Component\Container\Contracts\IDuplicateIdException;
 /**
  * Class DuplicateDependencyNameException.
  *
- *
  * @author Eleandro Duzentos <eleandro@inbox.ru>
  */
 class DuplicateIdException extends Exception implements IDuplicateIdException
