@@ -8,9 +8,9 @@ use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
 use Unity\Component\Container\Contracts\IContainer;
-use Unity\Component\Container\Bind\BindResolverFactory;
+use Unity\Component\Container\Bind\BindResolver;
+use Unity\Component\Container\Dependency\DependencyFactory;
 use Unity\Component\Container\Dependency\DependencyResolver;
-use Unity\Component\Container\Dependency\DependencyResolverFactory;
 use Unity\Component\Container\Exceptions\DuplicateIdException;
 use Unity\Component\Container\Exceptions\NotFoundException;
 
@@ -21,11 +21,24 @@ use Unity\Component\Container\Exceptions\NotFoundException;
  *
  * @author Eleandro Duzentos <eleandro@inbox.ru>
  */
-class Container implements IContainer, ArrayAccess, Countable
+class Container implements IContainer
 {
-    protected $binds      = [];
-    protected $resolvers  = [];
-    protected $autoInject = true;
+    protected $binds             = [];
+    protected $resolvers         = [];
+    protected $canAutowiring     = true;
+    protected $canUseAnnotations = true;
+
+    protected $dependencyFactory;
+
+    /**
+     * Sets the `DependencyFactory` instance.
+     *
+     * @param DependencyFactory $dependencyFactory
+     */
+    function setDependencyFactory(DependencyFactory $dependencyFactory)
+    {
+        $this->dependencyFactory = $dependencyFactory;
+    }
 
     /**
      * Register a dependency resolver.
@@ -40,10 +53,14 @@ class Container implements IContainer, ArrayAccess, Countable
     public function register($id, $entry)
     {
         if ($this->has($id)) {
-            throw new DuplicateIdException("The container already has a dependency resolver for \"{$id}\".");
+            throw new DuplicateIdException("The container already has a dependency resolver for id \"{$id}\".");
         }
 
-        return $this->resolvers[$id] = DependencyResolverFactory::make($id, $entry, $this);
+        return $this->resolvers[$id] = new DependencyResolver(
+            $entry,
+            $this->dependencyFactory,
+            $this
+        );
     }
 
     /**
@@ -58,7 +75,7 @@ class Container implements IContainer, ArrayAccess, Countable
     public function unregister($id)
     {
         if (!$this->has($id)) {
-            $this->throwNotFoundException($id);
+            throw new NotFoundException("No dependency resolver was founded for id \"{$id}\" on the container.");
         }
 
         unset($this->resolvers[$id]);
@@ -72,13 +89,18 @@ class Container implements IContainer, ArrayAccess, Countable
      * This method does'nt replaces dependencies already resolved by the container.
      *
      * @param string $id
-     * @param mixed  $entry Content that will be used to resolve the dependency.
+     * @param mixed  $entry
+     *      Content that will be used to resolve the dependency.
      *
      * @return DependencyResolver
      */
     public function replace($id, $entry)
     {
-        return $this->resolvers[$id] = DependencyResolverFactory::make($id, $entry, $this);
+        return $this->resolvers[$id] = new DependencyResolver(
+            $entry,
+            $this->dependencyFactory,
+            $this
+        );
     }
 
     /**
@@ -95,10 +117,10 @@ class Container implements IContainer, ArrayAccess, Countable
     public function get($id)
     {
         if ($this->has($id)) {
-            return $this->resolvers[$id]->getSingleton();
+            return $this->resolvers[$id]->resolve();
         }
 
-        $this->throwNotFoundException($id);
+        throw new NotFoundException("No dependency resolver was founded for id \"{$id}\" on the container.");
     }
 
     /**
@@ -129,102 +151,118 @@ class Container implements IContainer, ArrayAccess, Countable
             return $this->resolvers[$id]->make($params);
         }
 
-        $this->throwNotFoundException($id);
+        throw new NotFoundException("No dependency resolver was founded for id \"{$id}\" on the container.");
     }
 
     /**
-     * @param string $interface
-     * @param mixed $entry
+     * @param string $class
+     * @param mixed  $callback
      *
      * Binds a concrete class to an interface.
      *
-     * Every time a class needs an argument of $interface type,
-     * the $entry will be resolved, and the value will be injected.
+     * Every time a class needs an argument of type `$class`,
+     * the `$callback` will be invoked, and the return value will be injected.
      *
      * Different of the register method, this will not throw an exception
      * if you register an bind with the same key twice, instead, it will
      * replace the old bind by this new one.
      *
-     * @return Container
+     * @return static
      */
-    public function bind(string $interface, $entry)
+    public function bind(string $class, $callback)
     {
-        $this->binds[$interface] = BindResolverFactory::make($interface, $entry, $this);
+        $this->binds[$class] = new BindResolver($callback, $this);
 
         return $this;
     }
 
     /**
-     * @param string $interface
+     * @param $class
+     *
+     * @return bool
+     */
+    public function isBound(string $class)
+    {
+        return isset($this->binds[$class]);
+    }
+
+    /**
+     * @param string $class
      *
      * @return mixed
      *
      * @throws NotFoundException
      */
-    public function getBind(string $interface)
+    public function getBoundValue(string $class)
     {
-        if ($this->hasBind($interface)) {
-            return $this->binds[$interface]->resolve();
+        if ($this->isBound($class)) {
+            return $this->binds[$class]->resolve();
         }
 
-        throw new NotFoundException("No resolver was bound to interface \"{$interface}\" on the container.");
+        throw new NotFoundException("No resolver was bound to class \"{$class}\" on the container.");
     }
 
     /**
-     * @param $interface
+     * Enable|Disable autowiring.
      *
-     * @return bool
-     */
-    public function hasBind(string $interface)
-    {
-        return isset($this->binds[$interface]);
-    }
-
-    /**
-     * Enable|Disable auto inject.
-     *
-     * Tells the container if it should try auto inject
-     * classes constructor dependencies.
+     * Tells the container if it should auto wiring.
      *
      * @param bool $enable
      *
      * @return $this
      */
-    public function enableAutoInject($enable)
+    public function enableAutowiring($enable)
     {
-        $this->autoInject = $enable;
+        $this->canAutowiring = $enable;
 
         return $this;
     }
 
     /**
-     * Checks if auto inject is enabled.
+     * Checks if injection is enabled.
      *
      * @return bool
      */
-    public function canAutoInject()
+    public function canAutowiring()
     {
-        return $this->autoInject;
+        return $this->canAutowiring;
     }
 
     /**
-     * @param $id
+     * Enable|Disable the use of annotations.
      *
-     * @throws NotFoundException
+     * Tells the container if it can inspect annotations
+     * searching for properties or constructor dependencies.
+     *
+     * @param bool $enable
+     *
+     * @return $this
      */
-    protected function throwNotFoundException($id)
+    public function enableUseAnnotation($enable)
     {
-        throw new NotFoundException("No dependency resolver was founded for id \"{$id}\" on the container.");
+        $this->canUseAnnotations = $enable;
+
+        return $this;
     }
 
-    function __get($name)
+    /**
+     * Checks if the use of annotations is enabled.
+     *
+     * @return bool
+     */
+    public function canUseAnnotations()
     {
-        return $this->get($name);
+        return $this->canUseAnnotations;
     }
 
-    function __set($name, $value)
+    function __get($id)
     {
-        $this->register($name, $value);
+        return $this->get($id);
+    }
+
+    function __set($id, $entry)
+    {
+        $this->register($id, $entry);
     }
 
     /**
@@ -239,48 +277,47 @@ class Container implements IContainer, ArrayAccess, Countable
     }
 
     /**
-     * Whether a offset exists.
+     * Whether a $id exists.
      *
-     * @param string $offset
+     * @param string $id
      *
      * @return bool
      */
-    public function offsetExists($offset)
+    public function offsetExists($id)
     {
-        return isset($this->resolvers[$offset]);
+        return $this->has($id);
     }
 
     /**
-     * Resolver offset to retrieve.
+     * Resolver $id to retrieve.
      *
-     * @param string $offset
+     * @param string $id
      *
      * @return mixed
      */
-    public function offsetGet($offset)
+    public function offsetGet($id)
     {
-        return $this->resolvers[$offset];
+        return $this->get($id);
     }
 
     /**
-     * Offset to set.
+     * Resolver to set.
      *
-     * @param string $offset
-     *
-     * @param mixed $value
+     * @param string $id
+     * @param mixed  $entry
      */
-    public function offsetSet($offset, $value)
+    public function offsetSet($id, $entry)
     {
-        $this->resolvers[$offset] = $value;
+        $this->register($id, $entry);
     }
 
     /**
-     * Offset to unset.
+     * Resolver to unset.
      *
-     * @param string $offset
+     * @param string $id
      */
-    public function offsetUnset($offset)
+    public function offsetUnset($id)
     {
-        unset($this->resolvers[$offset]);
+        $this->unregister($id);
     }
 }
