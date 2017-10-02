@@ -1,26 +1,25 @@
 <?php
 
-use PHPUnit\Framework\TestCase;
-use phpDocumentor\Reflection\DocBlock\Tag;
-use Helpers\Mocks\TestBase;
 use e200\MakeAccessible\Make;
-use Unity\Reflector\Reflector;
-use Unity\Component\Container\Exceptions\NonInstantiableClassException;
-use Unity\Component\Container\Dependency\DependencyFactory;
 use Helpers\Bar;
+use Helpers\Bounded;
 use Helpers\Foo;
 use Helpers\IFoo;
-use Helpers\Bounded;
-use Helpers\WithProperties;
+use Helpers\Mocks\TestBase;
 use Helpers\WithConstructor;
 use Helpers\WithConstructorParameters;
+use Helpers\WithProperties;
+use phpDocumentor\Reflection\DocBlock\Tag;
+use Unity\Component\Container\Dependency\DependencyFactory;
+use Unity\Component\Container\Exceptions\NonInstantiableClassException;
+use Unity\Reflector\Reflector;
 
 /**
  * @author Eleandro Duzentos <eleandro@inbox.ru>
  */
 class DependencyFactoryTest extends TestBase
 {
-    function testGetTagValue()
+    public function testGetTagValue()
     {
         $df = $this->getAccessibleDependencyFactory();
 
@@ -37,7 +36,7 @@ class DependencyFactoryTest extends TestBase
     /**
      * @covers DependencyFactory::getTagValue()
      */
-    function testGetTagValueWithNoValue()
+    public function testGetTagValueWithNoValue()
     {
         $df = $this->getAccessibleDependencyFactory();
 
@@ -59,7 +58,7 @@ class DependencyFactoryTest extends TestBase
      *
      * @covers DependencyFactory::giveConstructorArgs()
      */
-    function testGetConstructoArgsWithGivenDependencies()
+    public function testGetConstructoArgsWithGivenDependencies()
     {
         $df = $this->getAccessibleDependencyFactory();
 
@@ -73,15 +72,13 @@ class DependencyFactoryTest extends TestBase
         $this->assertEquals($args, $constructorArgs);
     }
 
-
-
     /**
      * Performs a test with a class that has its constructor parameters bounded
      * in the Container.
      *
      * @covers DependencyFactory::giveConstructorArgs()
      */
-    function testGetConstructoArgsWithBoundArgs()
+    public function testGetConstructoArgsWithBoundArgs()
     {
         $containerMock = $this->mockContainer();
 
@@ -116,7 +113,7 @@ class DependencyFactoryTest extends TestBase
      *
      * @covers DependencyFactory::giveConstructorArgs()
      */
-    function testGetConstructoArgsWithAutowiring()
+    public function testGetConstructoArgsWithAutowiring()
     {
         $containerMock = $this->mockContainer();
 
@@ -149,7 +146,7 @@ class DependencyFactoryTest extends TestBase
      *
      * @covers DependencyFactory::injectPropertyDependencies()
      */
-    function testInjectPropertyDependencies()
+    public function testInjectPropertyDependencies()
     {
         $containerMock = $this->mockContainer();
 
@@ -187,7 +184,7 @@ class DependencyFactoryTest extends TestBase
         $this->assertInstanceOf(stdClass::class, $accessibleWithPropeties->std);
     }
 
-    function testMake()
+    public function testMake()
     {
         $containerMock = $this->mockContainer();
 
@@ -207,12 +204,10 @@ class DependencyFactoryTest extends TestBase
         $this->assertInstanceOf(WithConstructor::class, $df->make(WithConstructor::class));
     }
 
-
-
     /**
      * @covers DependencyFactory::make()
      */
-    function testNonInstantiableClassExceptionOnMake()
+    public function testNonInstantiableClassExceptionOnMake()
     {
         $this->expectException(NonInstantiableClassException::class);
 
@@ -221,19 +216,19 @@ class DependencyFactoryTest extends TestBase
         $df->make(IFoo::class);
     }
 
-    function getDependencyFactory($container = null)
+    public function getDependencyFactory($container = null)
     {
         //////////////////////////////////////////////////////////
         // Some test functions need to provide their own mocks. //
         //////////////////////////////////////////////////////////
-        if(!$container) {
+        if (!$container) {
             $container = $this->mockContainer();
         }
 
         return new DependencyFactory($container, new Reflector());
     }
 
-    function getAccessibleDependencyFactory($container = null)
+    public function getAccessibleDependencyFactory($container = null)
     {
         return Make::accessible($this->getDependencyFactory($container));
     }

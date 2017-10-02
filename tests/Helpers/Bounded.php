@@ -4,8 +4,7 @@ namespace Helpers;
 
 class Bounded
 {
-    function __construct(Bar $bar)
+    public function __construct(Bar $bar)
     {
-
     }
 }

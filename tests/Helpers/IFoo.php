@@ -4,5 +4,4 @@ namespace Helpers;
 
 interface IFoo
 {
-
 }
