@@ -2,6 +2,7 @@
 
 namespace Unity\Component\Container\Bind;
 
+use Callable;
 use Psr\Container\ContainerInterface;
 
 /**
@@ -14,7 +15,7 @@ class BindResolver
     protected $callback;
     protected $container;
 
-    function __construct($callback, ContainerInterface $container)
+    function __construct(Callable $callback, ContainerInterface $container)
     {
         $this->callback  = $callback;
         $this->container = $container;
