@@ -26,7 +26,7 @@ class DependencyFactory
      * DependencyBuilder constructor.
      *
      * @param IContainer $container
-     * @param Reflector $reflector
+     * @param Reflector  $reflector
      */
     public function __construct(IContainer $container, Reflector $reflector)
     {
