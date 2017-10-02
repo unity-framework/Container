@@ -1,8 +1,10 @@
 <?php
 
+use e200\MakeAccessible\Make;
 use Helpers\Bar;
 use PHPUnit\Framework\TestCase;
 use Unity\Component\Container\Contracts\IContainer;
+use Unity\Component\Container\Dependency\DependencyFactory;
 use Unity\Component\Container\Dependency\DependencyResolver;
 
 /**
@@ -10,47 +12,79 @@ use Unity\Component\Container\Dependency\DependencyResolver;
  */
 class DependencyResolverTest extends TestCase
 {
-    const ID = 'testId';
-
-    public function testGetId()
-    {
-        $dependencyResolver = $this->getDependencyResolver();
-
-        $this->assertEquals(self::ID, $dependencyResolver->getId());
-    }
-
     public function testGetEntry()
     {
-        $dependencyResolver = $this->getDependencyResolver();
+        $dependencyResolver = $this->getAccessibleResolver();
 
         $this->assertEquals(Bar::class, $dependencyResolver->getEntry());
     }
 
-    public function testGiveGetParams()
+    public function testGive()
     {
-        $dependencyResolver = $this->getDependencyResolver();
-        $params = ['e200', 'Eleandro'];
+        $realDependencyResolver = $this->getDependencyResolver();
 
-        $instance = $dependencyResolver->give($params);
-        $this->assertSame($dependencyResolver, $instance);
+        $dependencyResolver = Make::accessible($realDependencyResolver);
 
-        $this->assertSame($params, $dependencyResolver->getGivenParams());
+        $arguments = [0, 1];
+
+        $instance = $realDependencyResolver->give($arguments);
+
+        $this->assertSame($arguments, $dependencyResolver->arguments);
+        $this->assertSame($realDependencyResolver, $instance);
     }
 
-    public function testBindGetBinds()
+    public function testGetArguments()
     {
-        $dependencyResolver = $this->getDependencyResolver();
-        $binds = ['e200', 'Eleandro'];
+        $dependencyResolver = $this->getAccessibleResolver();
 
-        $instance = $dependencyResolver->bind($binds);
-        $this->assertSame($dependencyResolver, $instance);
+        $arguments = [0, 1];
 
-        $this->assertSame($binds, $dependencyResolver->getBinds());
+        $dependencyResolver->arguments = $arguments;
+
+        $this->assertSame($arguments, $dependencyResolver->getArguments());
+    }
+
+    public function testSetSingleton()
+    {
+        $dependencyResolver = $this->getAccessibleResolver();
+
+        $dependencyResolver->setSingleton(200);
+
+        $this->assertEquals(200, $dependencyResolver->singleton);
+    }
+
+    public function testGetSingleton()
+    {
+        $dependencyResolver = $this->getAccessibleResolver();
+
+        $dependencyResolver->singleton = 200;
+
+        $this->assertEquals(200, $dependencyResolver->getSingleton());
+    }
+
+    public function testHasSingleton()
+    {
+        $dependencyResolver = $this->getAccessibleResolver();
+
+        $this->assertFalse($dependencyResolver->hasSingleton());
+
+        $dependencyResolver->singleton = 200;
+
+        $this->assertTrue($dependencyResolver->hasSingleton());
     }
 
     public function testMakeWithClassName()
     {
-        $dependencyResolver = $this->getDependencyResolver();
+        $dependencyFactory = $this->getDependencyFactoryMock();
+
+        $dependencyFactory
+            ->expects($this->exactly(2))
+            ->method('make')
+            ->will($this->onConsecutiveCalls(new Bar(), new Bar()));
+
+        $dependencyResolver = $this->getAccessibleResolver(null, $dependencyFactory);
+
+        $dependencyResolver->entry = Bar::class;
 
         $instance1 = $dependencyResolver->make();
         $instance2 = $dependencyResolver->make();
@@ -61,9 +95,9 @@ class DependencyResolverTest extends TestCase
 
     public function testMakeWithCallback()
     {
-        $dependencyResolver = $this->getDependencyResolver(function () {
-            return new Bar();
-        });
+        $dependencyResolver = $this->getAccessibleResolver();
+
+        $dependencyResolver->entry = function () { return new Bar(); };
 
         $instance = $dependencyResolver->make();
 
@@ -79,44 +113,78 @@ class DependencyResolverTest extends TestCase
         $this->assertEquals('e200', $value);
     }
 
-    public function testSetSingleton()
-    {
-        $dependencyResolver = $this->getDependencyResolver();
-
-        $this->assertEquals('e200', $dependencyResolver->setSingleton('e200'));
-    }
-
-    public function testGetHasSingleton()
-    {
-        $dependencyResolver = $this->getDependencyResolver();
-
-        $this->assertFalse($dependencyResolver->hasSingleton());
-
-        $instance = $dependencyResolver->getSingleton();
-
-        $this->assertInstanceOf(Bar::class, $instance);
-
-        $this->assertTrue($dependencyResolver->hasSingleton());
-    }
-
-    public function testResolve()
+    /*public function testResolve()
     {
         $dependencyResolver = $this->getDependencyResolver();
 
         $instance = $dependencyResolver->resolve();
 
         $this->assertInstanceOf(Bar::class, $instance);
-    }
+    }*/
 
-    public function getDependencyResolver($entry = null)
+    public function getContainerMock()
     {
         $containerMock = $this->createMock(IContainer::class);
 
         $containerMock
             ->expects($this->any())
-            ->method('enableAutoInject')
+            ->method('canAutowiring')
             ->willReturn(true);
 
-        return new DependencyResolver(self::ID, $entry ?? Bar::class, $containerMock);
+        return $containerMock;
+    }
+
+    public function getDependencyFactoryMock()
+    {
+        $dependencyFactory = $this->createMock(DependencyFactory::class);
+
+        return $dependencyFactory;
+    }
+
+    /**
+     * @param mixed  $entry The resolver entry.
+     * @param object $dependencyFactory The dependencyFactory dependency.
+     */
+    public function getDependencyResolver($entry = null, $dependencyFactory = null)
+    {
+        // `Container` is a DependencyResolver dependency.
+        $containerMock = $this->getContainerMock();
+
+        /*
+         * By default, the test entry is a string containing a class name.
+         *
+         * But some tests needs to pass a specific `$entry`, in such case we let
+         * these methods provide their own entries using the `$entry` argument.
+         */
+        $entry = $entry ?? Bar::class;
+
+        /*
+         * `DependencyFactory` is a DependencyResolver dependency.
+         *
+         * Some tests also needs to pass a `$dependencyFactory` mock with
+         * a specific behaviour, in such case we let these methods
+         * provide their own specific mockups using the `$dependencyFactory`
+         * argument.
+         */
+        $dependencyFactory = $dependencyFactory ?? $this->getDependencyFactoryMock();
+
+        return new DependencyResolver(
+            $entry,
+            $dependencyFactory,
+            $containerMock
+        );
+    }
+
+    /**
+     *
+     *
+     * @param mixed  $entry The resolver entry.
+     * @param object $dependencyFactory The dependencyFactory dependency.
+     */
+    public function getAccessibleResolver($entry = null, $dependencyFactory = null)
+    {
+        $resolver = $this->getDependencyResolver($entry, $dependencyFactory);
+
+        return Make::accessible($resolver);
     }
 }
