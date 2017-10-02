@@ -2,10 +2,8 @@
 
 namespace Unity\Component\Container\Dependency;
 
-use Exception;
-use Unity\Component\Container\Contracts\IContainer;
 use Psr\Container\ContainerExceptionInterface;
-use Unity\Component\Container\Exceptions\ContainerException;
+use Unity\Component\Container\Contracts\IContainer;
 
 /**
  * Class DependencyResolver.
@@ -28,9 +26,9 @@ class DependencyResolver
         DependencyFactory $dependencyFactory,
         IContainer        $container
         ) {
-        $this->entry             = $entry;
+        $this->entry = $entry;
         $this->dependencyFactory = $dependencyFactory;
-        $this->container         = $container;
+        $this->container = $container;
     }
 
     /**

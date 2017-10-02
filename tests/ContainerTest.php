@@ -1,17 +1,16 @@
 <?php
 
-use e200\MakeAccessible\Make;
+use Helpers\Bar;
+use Helpers\Fake;
+use Helpers\Foo;
+use Helpers\Foobar;
+use Helpers\IFoo;
+use PHPUnit\Framework\TestCase;
+use Unity\Component\Container\Container;
 use Unity\Component\Container\Contracts\IContainer;
 use Unity\Component\Container\Dependency\DependencyResolver;
 use Unity\Component\Container\Exceptions\DuplicateIdException;
 use Unity\Component\Container\Exceptions\NotFoundException;
-use Unity\Component\Container\Container;
-use Helpers\Mocks\TestBase;
-use Helpers\Bar;
-use Helpers\Foo;
-use Helpers\IFoo;
-use Helpers\Foobar;
-use Helpers\WithConstructorParameters;
 
 /**
  * @author Eleandro Duzentos <eleandro@inbox.ru>
@@ -63,8 +62,8 @@ class ContainerTest extends TestBase
     {
         $container = $this->getContainer();
 
-        $this->assertFalse($container->isBound(IFoo::class));
-        $instance = $container->bind(IFoo::class, function (){
+        $this->assertFalse($container->hasBind(IFoo::class));
+        $instance = $container->bind(IFoo::class, function () {
             return new Foo(new Bar());
         });
 

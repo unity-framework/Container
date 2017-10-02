@@ -4,7 +4,7 @@ namespace Helpers;
 
 class Foobar
 {
-    function __construct(IFoo $foo)
+    public function __construct(IFoo $foo)
     {
     }
 }

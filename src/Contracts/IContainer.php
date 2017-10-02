@@ -19,9 +19,9 @@ interface IContainer extends ContainerInterface, ArrayAccess, Countable
      * @param string $id
      * @param mixed  $entry Content that will be used to generate the dependency.
      *
-     * @return DependencyResolver
-     *
      * @throws DuplicateIdException
+     *
+     * @return DependencyResolver
      */
     public function register($id, $entry);
 
@@ -43,7 +43,7 @@ interface IContainer extends ContainerInterface, ArrayAccess, Countable
      *
      * @param string $id
      * @param mixed  $entry
-     *      Content that will be used to resolve the dependency.
+     *                      Content that will be used to resolve the dependency.
      *
      * @return DependencyResolver
      */
@@ -103,9 +103,9 @@ interface IContainer extends ContainerInterface, ArrayAccess, Countable
     /**
      * @param string $class
      *
-     * @return mixed
-     *
      * @throws NotFoundException
+     *
+     * @return mixed
      */
     public function getBoundValue(string $class);
 
