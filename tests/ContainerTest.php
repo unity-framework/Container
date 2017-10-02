@@ -1,23 +1,42 @@
 <?php
 
-use Helpers\Bar;
-use Helpers\Fake;
-use Helpers\Foo;
-use Helpers\Foobar;
-use Helpers\IFoo;
-use PHPUnit\Framework\TestCase;
+use e200\MakeAccessible\Make;
 use Unity\Component\Container\Contracts\IContainer;
 use Unity\Component\Container\Dependency\DependencyResolver;
 use Unity\Component\Container\Exceptions\DuplicateIdException;
 use Unity\Component\Container\Exceptions\NotFoundException;
 use Unity\Component\Container\Container;
+use Helpers\Mocks\TestBase;
+use Helpers\Bar;
+use Helpers\Foo;
+use Helpers\IFoo;
+use Helpers\Foobar;
+use Helpers\WithConstructorParameters;
 
 /**
  * @author Eleandro Duzentos <eleandro@inbox.ru>
  */
-class ContainerTest extends TestCase
+class ContainerTest extends TestBase
 {
-    public function testRegisterHas()
+    /**
+     * Tests if `Container::register()` adds `DependencyResolver` instances into
+     * `Container::$resolvers` and returns the new `DependencyResolver` instance.
+     */
+    public function testRegister()
+    {
+        $resolverId = 'itemId';
+        $expectation = 'Jay Alpha - Visions';
+
+        $container = $this->getContainer();
+        $accessibleContainer = Make::accessible($container);
+
+        $dependencyResolver = $container->register($resolverId, $expectation);
+
+        $this->assertInstanceOf(DependencyResolver::class, $dependencyResolver);
+        $this->assertEquals($dependencyResolver, $accessibleContainer->resolvers[$resolverId]);
+    }
+
+    public function testHas()
     {
         $container = $this->getContainer();
 
@@ -28,7 +47,7 @@ class ContainerTest extends TestCase
         );
         $this->assertTrue($container->has('id'));
     }
-
+/*
     public function testUnregister()
     {
         $container = $this->getContainer();
@@ -39,31 +58,23 @@ class ContainerTest extends TestCase
         $this->assertFalse($container->has('id'));
     }
 
-    /**
-     * @covers Container::bind()
-     * @covers Container::hasBind()
-     * @covers Container::getBind()
-     */
+
     public function testHasGetRegisterDataForType()
     {
         $container = $this->getContainer();
 
-        $this->assertFalse($container->hasBind(IFoo::class));
+        $this->assertFalse($container->isBound(IFoo::class));
         $instance = $container->bind(IFoo::class, function (){
             return new Foo(new Bar());
         });
 
         $this->assertInstanceOf(IContainer::class, $instance);
-        $data = $container->getBind(IFoo::class);
+        $data = $container->getBoundValue(IFoo::class);
 
         $this->assertInstanceOf(IFoo::class, $data);
     }
 
-    /**
-     * Checks if the container throws an exception
-     * if someone tries to register 2 dependencies with
-     * the same id.
-     */
+
     public function testDuplicateDependencyResolverExceptionOnRegister()
     {
         $this->expectException(DuplicateIdException::class);
@@ -86,17 +97,15 @@ class ContainerTest extends TestCase
         $this->assertSame($instance, $container->get('bar'));
     }
 
-    public  function testHasBind()
+    public  function testIsBound()
     {
         $container = $this->getContainer();
 
-        $this->assertFalse($container->hasBind(''));
+        $this->assertFalse($container->isBound(''));
     }
 
-    /**
-     * @covers Container::bind()
-     */
-    public function testGetBind()
+
+    public function testGetBoundValue()
     {
         $container = $this->getContainer();
 
@@ -111,23 +120,18 @@ class ContainerTest extends TestCase
         $this->assertInstanceOf(Foobar::class, $instance);
     }
 
-    /**
-     * @covers Container::getBind()
-     */
+
     public function testNotFoundExceptionOnGetBind()
     {
         $this->expectException(NotFoundException::class);
 
         $container = $this->getContainer();
 
-        $this->assertFalse($container->hasBind(''));
-        $container->getBind('');
+        $this->assertFalse($container->isBound(''));
+        $container->getBoundValue('');
     }
 
-    /**
-     * Checks if the container throws an exception if
-     * someone tries to get a dependency that does'nt exists.
-     */
+
     public function testNotFoundExceptionOnGet()
     {
         $this->expectException(NotFoundException::class);
@@ -150,10 +154,18 @@ class ContainerTest extends TestCase
         $this->assertNotSame($instance1, $instance2);
     }
 
-    /**
-     * Checks if the container throws an exception if
-     * someone tries to make a dependency that does'nt exists.
-     */
+    public function testMakeWithParameters()
+    {
+        $container = $this->getContainer();
+
+        $container->register('withParams', WithConstructorParameters::class);
+
+        $instance = $container->make('withParams', ['', '']);
+
+        $this->assertInstanceOf(WithConstructorParameters::class, $instance);
+    }
+
+
     public function testNotFoundExceptionOnMake()
     {
         $this->expectException(NotFoundException::class);
@@ -176,35 +188,18 @@ class ContainerTest extends TestCase
         $this->assertNotSame($instance1, $instance2);
     }
 
-    /**
-     * @covers Container::throwNotFoundException()
-     */
-    public function testThrowNotFoundException()
-    {
-        $this->expectException(NotFoundException::class);
-
-        $fake = new Fake(new Container());
-
-        $fake->throwNotFoundException(null);
-    }
-
-    public function testEnableCanAutoInject()
+    public function testEnableCanAutowiring()
     {
         $container = $this->getContainer();
 
-        /*
-         * True by default.
-         */
-        $this->assertTrue($container->canAutoInject());
-        $container->enableAutoInject(false);
-        $this->assertFalse($container->canAutoInject());
-        $container->enableAutoInject(true);
-        $this->assertTrue($container->canAutoInject());
+        // True by default.
+        $this->assertTrue($container->canAutowiring());
+        $container->enableAutowiring(false);
+        $this->assertFalse($container->canAutowiring());
+        $container->enableAutowiring(true);
+        $this->assertTrue($container->canAutowiring());
     }
 
-    /**
-     * @covers Container::__call()
-     */
     public function test__setget()
     {
         $container = $this->getContainer();
@@ -226,9 +221,6 @@ class ContainerTest extends TestCase
         $this->assertCount(2, $container);
     }
 
-    /**
-     * @covers Container::__call()
-     */
     public function testArrayAccess()
     {
         $container = $this->getContainer();
@@ -242,10 +234,21 @@ class ContainerTest extends TestCase
         $this->assertArrayHasKey('e200', $container);
 
         $this->assertEquals('Eleandro Duzentos', $container['e200']);
-    }
+    }*/
 
     public function getContainer()
     {
-        return new Container();
+        $dependencyFactoryMock = $this->mockDependencyFactory();
+
+        $instance = new Container();
+
+        $instance->setDependencyFactory($dependencyFactoryMock);
+
+        return $instance;
+    }
+
+    public function getAccessibleContainer($container)
+    {
+        return Make::accessible($container);
     }
 }
