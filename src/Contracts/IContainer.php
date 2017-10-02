@@ -2,20 +2,16 @@
 
 namespace Unity\Component\Container\Contracts;
 
-use Psr\Container\ContainerExceptionInterface;
+use ArrayAccess;
+use Countable;
 use Psr\Container\ContainerInterface;
-use Psr\Container\NotFoundExceptionInterface;
-use Unity\Component\Container\Container;
-use Unity\Component\Container\Dependency\DependencyResolver;
-use Unity\Component\Container\Exceptions\DuplicateIdException;
-use Unity\Component\Container\Exceptions\NotFoundException;
 
 /**
  * Interface IContainer.
  *
  * @author Eleandro Duzentos <eleandro@inbox.ru>
  */
-interface IContainer extends ContainerInterface
+interface IContainer extends ContainerInterface, ArrayAccess, Countable
 {
     /**
      * Register a dependency resolver.
@@ -23,9 +19,9 @@ interface IContainer extends ContainerInterface
      * @param string $id
      * @param mixed  $entry Content that will be used to generate the dependency.
      *
-     * @throws DuplicateIdException
-     *
      * @return DependencyResolver
+     *
+     * @throws DuplicateIdException
      */
     public function register($id, $entry);
 
@@ -41,26 +37,17 @@ interface IContainer extends ContainerInterface
     public function unregister($id);
 
     /**
-     * @param string $interface
-     * @param mixed $entry
+     * Replaces a registered resolver.
      *
-     * @return Container
-     */
-    public function bind(string $interface, $entry);
-
-    /**
-     * @param $interface
+     * This method does'nt replaces dependencies already resolved by the container.
      *
-     * @return mixed
-     */
-    public function getBind(string $interface);
-
-    /**
-     * @param $type
+     * @param string $id
+     * @param mixed  $entry
+     *      Content that will be used to resolve the dependency.
      *
-     * @return bool
+     * @return DependencyResolver
      */
-    public function hasBind(string $type);
+    public function replace($id, $entry);
 
     /**
      * Resolves and returns the dependency on the first call.
@@ -97,31 +84,72 @@ interface IContainer extends ContainerInterface
     public function make($id, $params = null);
 
     /**
-     * Replaces a registered resolver.
+     * @param string $class
+     * @param mixed  $entry
      *
-     * This method does'nt replaces dependencies already resolved by the container.
+     * Binds a concrete class to an interface.
      *
-     * @param string $id
-     * @param mixed  $entry Content that will be used to resolve the dependency.
+     * Every time a class needs an argument of type `$class`,
+     * the `$entry` will be resolved, and the value will be injected.
      *
-     * @return DependencyResolver
+     * Different of the register method, this will not throw an exception
+     * if you register an bind with the same key twice, instead, it will
+     * replace the old bind by this new one.
+     *
+     * @return Container
      */
-    public function replace($id, $entry);
+    public function bind(string $class, $entry);
 
     /**
-     * Enable|Disable auto inject.
+     * @param string $class
      *
-     * Tells the container if it should try auto inject
-     * classes constructor dependencies.
+     * @return mixed
      *
-     * @param bool $enable
+     * @throws NotFoundException
      */
-    public function enableAutoInject($enable);
+    public function getBoundValue(string $class);
 
     /**
-     * Checks if auto inject is enabled.
+     * @param string $class
      *
      * @return bool
      */
-    public function canAutoInject();
+    public function isBound(string $class);
+
+    /**
+     * Enable|Disable autowiring.
+     *
+     * Tells the container if it should auto wiring.
+     *
+     * @param bool $enable
+     *
+     * @return $this
+     */
+    public function enableAutowiring($enable);
+
+    /**
+     * Checks if injection is enabled.
+     *
+     * @return bool
+     */
+    public function canAutowiring();
+
+    /**
+     * Enable|Disable the use of annotations.
+     *
+     * Tells the container if it can inspect annotations
+     * searching for properties or constructor dependencies.
+     *
+     * @param bool $enable
+     *
+     * @return $this
+     */
+    public function enableUseAnnotation($enable);
+
+    /**
+     * Checks if the use of annotations is enabled.
+     *
+     * @return bool
+     */
+    public function canUseAnnotations();
 }
