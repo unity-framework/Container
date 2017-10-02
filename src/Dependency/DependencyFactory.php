@@ -8,6 +8,7 @@ use phpDocumentor\Reflection\DocBlock\Tag;
 use phpDocumentor\Reflection\DocBlockFactory;
 use Unity\Component\Container\Contracts\IContainer;
 use Unity\Component\Container\Exceptions\NonInstantiableClassException;
+
 /**
  * Class DependencyBuilder.
  *
@@ -25,6 +26,7 @@ class DependencyFactory
      * DependencyBuilder constructor.
      *
      * @param IContainer $container
+     * @param Reflector $reflector
      */
     public function __construct(IContainer $container, Reflector $reflector)
     {
