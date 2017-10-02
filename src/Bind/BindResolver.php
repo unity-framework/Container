@@ -2,7 +2,6 @@
 
 namespace Unity\Component\Container\Bind;
 
-use Callable;
 use Psr\Container\ContainerInterface;
 
 /**
