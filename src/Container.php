@@ -2,13 +2,10 @@
 
 namespace Unity\Component\Container;
 
-use ArrayAccess;
-use Countable;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
-
-use Unity\Component\Container\Contracts\IContainer;
 use Unity\Component\Container\Bind\BindResolver;
+use Unity\Component\Container\Contracts\IContainer;
 use Unity\Component\Container\Dependency\DependencyFactory;
 use Unity\Component\Container\Dependency\DependencyResolver;
 use Unity\Component\Container\Exceptions\DuplicateIdException;
@@ -23,9 +20,9 @@ use Unity\Component\Container\Exceptions\NotFoundException;
  */
 class Container implements IContainer
 {
-    protected $binds             = [];
-    protected $resolvers         = [];
-    protected $canAutowiring     = true;
+    protected $binds = [];
+    protected $resolvers = [];
+    protected $canAutowiring = true;
     protected $canUseAnnotations = true;
 
     protected $dependencyFactory;
@@ -35,7 +32,7 @@ class Container implements IContainer
      *
      * @param DependencyFactory $dependencyFactory
      */
-    function setDependencyFactory(DependencyFactory $dependencyFactory)
+    public function setDependencyFactory(DependencyFactory $dependencyFactory)
     {
         $this->dependencyFactory = $dependencyFactory;
     }
@@ -46,9 +43,9 @@ class Container implements IContainer
      * @param string $id
      * @param mixed  $entry Content that will be used to generate the dependency.
      *
-     * @return DependencyResolver
-     *
      * @throws DuplicateIdException
+     *
+     * @return DependencyResolver
      */
     public function register($id, $entry)
     {
@@ -90,7 +87,7 @@ class Container implements IContainer
      *
      * @param string $id
      * @param mixed  $entry
-     *      Content that will be used to resolve the dependency.
+     *                      Content that will be used to resolve the dependency.
      *
      * @return DependencyResolver
      */
@@ -189,9 +186,9 @@ class Container implements IContainer
     /**
      * @param string $class
      *
-     * @return mixed
-     *
      * @throws NotFoundException
+     *
+     * @return mixed
      */
     public function getBoundValue(string $class)
     {
@@ -255,19 +252,19 @@ class Container implements IContainer
         return $this->canUseAnnotations;
     }
 
-    function __get($id)
+    public function __get($id)
     {
         return $this->get($id);
     }
 
-    function __set($id, $entry)
+    public function __set($id, $entry)
     {
         $this->register($id, $entry);
     }
 
     /**
      * Counts and returns the number of registered
-     * resolvers on this container
+     * resolvers on this container.
      *
      * return int
      */

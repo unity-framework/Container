@@ -1,7 +1,7 @@
 <?php
 
-use Unity\Reflector\Reflector;
 use Unity\Component\Container\Container;
+use Unity\Reflector\Reflector;
 
 class ContainerBuilder
 {

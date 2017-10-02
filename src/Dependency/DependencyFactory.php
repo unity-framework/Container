@@ -2,12 +2,13 @@
 
 namespace Unity\Component\Container\Dependency;
 
-use ReflectionClass;
-use Unity\Reflector\Reflector;
 use phpDocumentor\Reflection\DocBlock\Tag;
 use phpDocumentor\Reflection\DocBlockFactory;
+use ReflectionClass;
 use Unity\Component\Container\Contracts\IContainer;
 use Unity\Component\Container\Exceptions\NonInstantiableClassException;
+use Unity\Reflector\Reflector;
+
 /**
  * Class DependencyBuilder.
  *
@@ -35,12 +36,12 @@ class DependencyFactory
     /**
      * Makes a `$class` instance.
      *
-     * @param string $class Class name.
+     * @param string $class        Class name.
      * @param array  $dependencies Constructor dependencies.
      *
-     * @return mixed|object
-     *
      * @throws NonInstantiableClassException
+     *
+     * @return mixed|object
      */
     public function make($class, $dependencies = [])
     {
@@ -69,7 +70,7 @@ class DependencyFactory
      * Inject dependencies into properties based on their DocBlock.
      *
      * @param ReflectionClass $redClass
-     * @param object $instance
+     * @param object          $instance
      */
     protected function injectPropertyDependencies($redClass, $instance)
     {
@@ -92,10 +93,10 @@ class DependencyFactory
                 ///////////////////////////////////////////////////////////////////////////
                 $tag = end($varTags);
 
-               /************************************************************************
-                * Tag value is the text next to the tag, e.g.: @var Unity\Support\Str, *
-                * where "Unity\Support\Str" is the value.                              *
-                ***********************************************************************/
+                /************************************************************************
+                 * Tag value is the text next to the tag, e.g.: @var Unity\Support\Str, *
+                 * where "Unity\Support\Str" is the value.                              *
+                 ***********************************************************************/
                 $class = $this->getTagValue($tag);
 
                 $classInstance = $this->innerMake($class);
@@ -128,7 +129,7 @@ class DependencyFactory
 
         $value = end($exp);
 
-        if (empty($value) || strpos($value, 'var') !== false){
+        if (empty($value) || strpos($value, 'var') !== false) {
             return false;
         } else {
             return $value;
@@ -139,9 +140,9 @@ class DependencyFactory
      * @param $dependencies
      * @param ReflectionClass $refClass
      *
-     * @return array
-     *
      * @throws MissingConstructorArgumentException
+     *
+     * @return array
      */
     protected function getConstructorArgs($dependencies, ReflectionClass $refClass)
     {
@@ -169,7 +170,7 @@ class DependencyFactory
                 continue;
             }
 
-             if ($param->hasType()) {
+            if ($param->hasType()) {
                 $paramType = (string) $param->getType();
 
                 if ($this->container->isBound($paramType)) {
