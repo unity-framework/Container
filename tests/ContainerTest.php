@@ -1,16 +1,12 @@
 <?php
 
-use Helpers\Bar;
-use Helpers\Fake;
-use Helpers\Foo;
-use Helpers\Foobar;
-use Helpers\IFoo;
-use PHPUnit\Framework\TestCase;
+use e200\MakeAccessible\Make;
 use Unity\Component\Container\Container;
 use Unity\Component\Container\Contracts\IContainer;
 use Unity\Component\Container\Dependency\DependencyResolver;
 use Unity\Component\Container\Exceptions\DuplicateIdException;
 use Unity\Component\Container\Exceptions\NotFoundException;
+use Helpers\Mocks\TestBase;
 
 /**
  * @author Eleandro Duzentos <eleandro@inbox.ru>
