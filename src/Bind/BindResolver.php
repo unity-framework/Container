@@ -2,29 +2,26 @@
 
 namespace Unity\Component\Container\Bind;
 
-use Unity\Component\Container\Contracts\IContainer;
-use Unity\Component\Container\Contracts\IResolver;
+use Psr\Container\ContainerInterface;
 
 /**
  * Class BindResolver.
  *
  * @author Eleandro Duzentos <eleandro@inbox.ru>
  */
-class BindResolver implements IResolver
+class BindResolver
 {
-    protected $id;
-    protected $entry;
+    protected $callback;
     protected $container;
 
-    function __construct(string $id, $entry, IContainer $container)
+    function __construct($callback, ContainerInterface $container)
     {
-        $this->id        = $id;
-        $this->entry     = $entry;
+        $this->callback  = $callback;
         $this->container = $container;
     }
 
     function resolve()
     {
-        return call_user_func($this->entry, $this->container);
+        return call_user_func($this->callback, $this->container);
     }
 }
