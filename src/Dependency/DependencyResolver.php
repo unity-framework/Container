@@ -3,9 +3,8 @@
 namespace Unity\Component\Container\Dependency;
 
 use Exception;
-use Psr\Container\ContainerExceptionInterface;
 use Unity\Component\Container\Contracts\IContainer;
-use Unity\Component\Container\Contracts\IResolver;
+use Psr\Container\ContainerExceptionInterface;
 use Unity\Component\Container\Exceptions\ContainerException;
 
 /**
@@ -15,37 +14,103 @@ use Unity\Component\Container\Exceptions\ContainerException;
  *
  * @author Eleandro Duzentos <eleandro@inbox.ru>
  */
-class DependencyResolver implements IResolver
+class DependencyResolver
 {
-    protected $id;
     protected $entry;
-    protected $container;
     protected $singleton;
-    protected $binds           = [];
-    protected $constructorData = [];
+    protected $arguments = [];
 
-    /**
-     * DependencyResolver constructor.
-     *
-     * @param string     $id
-     * @param mixed      $entry
-     * @param IContainer $container
-     */
-    public function __construct(string $id, $entry, IContainer $container)
-    {
-        $this->id        = $id;
-        $this->entry     = $entry;
-        $this->container = $container;
+    protected $dependencyFactory;
+    protected $container;
+
+    public function __construct(
+                          $entry,
+        DependencyFactory $dependencyFactory,
+        IContainer        $container
+        ) {
+        $this->entry             = $entry;
+        $this->dependencyFactory = $dependencyFactory;
+        $this->container         = $container;
     }
 
     /**
-     * Gets the resolver id.
+     * Resolves the resolver dependency.
      *
-     * @return string
+     * @return mixed
      */
-    public function getId()
+    public function resolve()
     {
-        return $this->id;
+        return $this->getSingleton();
+    }
+
+    /**
+     * Resolves and returns a new dependency on every call.
+     *
+     * @param array $arguments Parameters that will be used
+     *                         to construct the dependency.
+     *
+     *                         If a parameter already has a value given using the `give()`
+     *                         method, that parameters will be override by the parameter
+     *                         on the $parameters
+     *
+     * @return mixed
+     */
+    public function make($arguments = null)
+    {
+        $entry = $this->getEntry();
+
+        /*
+         * This will merge `DependencyResolver::$arguments`
+         * with `$arguments`.
+         *
+         * Items on the `DependencyResolver::$arguments`
+         * with the same key as items on `$arguments`
+         * will be overwritten.
+         */
+        if (!is_null($arguments)) {
+            $arguments = array_merge($this->getArguments(), $arguments);
+        }
+
+        //If our entry is a string and is an existing class, let's make it. :)
+        if (is_string($entry) && class_exists($entry)) {
+            return $this->dependencyFactory->make($entry, $arguments);
+        }
+
+        // If our entry is a callable, lets call it and return the output.
+        if (is_callable($entry)) {
+            return call_user_func($entry, $this->container);
+        }
+
+        /*
+         * If we're here, that means our entry isn't a class, or either a callable.
+         *
+         * In this case, we return the entry data.
+         */
+        return $entry;
+    }
+
+    /**
+     * Constructor arguments.
+     *
+     * @param array $arguments
+     *
+     * @return $this
+     */
+    public function give(array $arguments)
+    {
+        $this->arguments = $arguments;
+
+        return $this;
+    }
+
+    /**
+     * Gets the given arguments.
+     *
+     * @return array
+     */
+    public function getArguments()
+    {
+        return $this->arguments;
     }
 
     /**
@@ -53,7 +118,7 @@ class DependencyResolver implements IResolver
      *
      * @return mixed
      */
-    public function getEntry()
+    protected function getEntry()
     {
         return $this->entry;
     }
@@ -66,7 +131,7 @@ class DependencyResolver implements IResolver
      *
      * @return mixed
      */
-    public function getSingleton()
+    protected function getSingleton()
     {
         if ($this->hasSingleton()) {
             return $this->singleton;
@@ -86,9 +151,9 @@ class DependencyResolver implements IResolver
      *
      * @return mixed
      */
-    public function setSingleton($dependency)
+    protected function setSingleton($dependency)
     {
-        return $this->singleton = $dependency;
+        $this->singleton = $dependency;
     }
 
     /**
@@ -96,117 +161,8 @@ class DependencyResolver implements IResolver
      *
      * @return bool
      */
-    public function hasSingleton()
+    protected function hasSingleton()
     {
         return !is_null($this->singleton);
-    }
-
-    /**
-     * Resolves the resolver dependency.
-     *
-     * @return mixed
-     */
-    public function resolve()
-    {
-        return $this->getSingleton();
-    }
-
-    /**
-     * Resolves and returns a new dependency on every call.
-     *
-     * @param array $constructorData Parameters that will be used
-     * to construct the dependency.
-     * If a parameter already has a value given using the `give()`
-     * method, that parameters will be override by the parameter
-     * on the $parameters
-     *
-     * @return mixed
-     */
-    public function make($constructorData = null)
-    {
-        $entry = $this->getEntry();
-
-        /*
-         * This will merge user givens parameters using the `give()` method
-         * with $parameters.
-         *
-         * Elements on the first array with the same key on the second array
-         * will be override with the second array data.
-         */
-        if (!is_null($constructorData)) {
-            $constructorData = array_merge($this->constructorData, $constructorData);
-        }
-
-        /*
-         * If our entry is a string and is an existing class,
-         * let's build it :)
-         */
-        if (is_string($entry) && class_exists($entry)) {
-            return (new DependencyBuilder($this->container, $constructorData))->build($entry);
-        }
-
-        /*
-         * If our entry is a callable, lets call it and return the output.
-         */
-        if (is_callable($entry)) {
-            return call_user_func($entry, $this->container);
-        }
-
-
-        /*
-         * If we're here, that means our entry it's
-         * not a class, or either a callable.
-         *
-         * In this case, we return the entry data.
-         */
-        return $entry;
-    }
-
-    /**
-     * Parameters that will be given to the constructor on build time.
-     *
-     * @param array $params
-     *
-     * @return $this
-     */
-    public function give(array $params)
-    {
-        $this->constructorData = $params;
-
-        return $this;
-    }
-
-    /**
-     * Gets the given parameters.
-     *
-     * @return array
-     */
-    public function getGivenParams()
-    {
-        return $this->constructorData;
-    }
-
-    /**
-     * Binds others dependencies on container to this dependency.
-     *
-     * @param array $to
-     *
-     * @return $this
-     */
-    public function bind(array $to)
-    {
-        $this->binds = $to;
-
-        return $this;
-    }
-
-    /**
-     * Gets the given binds.
-     *
-     * @return array
-     */
-    public function getBinds()
-    {
-        return $this->binds;
     }
 }
