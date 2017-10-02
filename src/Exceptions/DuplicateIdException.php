@@ -3,8 +3,8 @@
 namespace Unity\Component\Container\Exceptions;
 
 use Exception;
-use Throwable;
 use Psr\Container\ContainerExceptionInterface;
+use Throwable;
 
 /**
  * Class DuplicateDependencyNameException.
