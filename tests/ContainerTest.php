@@ -6,11 +6,11 @@ use Helpers\Foo;
 use Helpers\Foobar;
 use Helpers\IFoo;
 use PHPUnit\Framework\TestCase;
+use Unity\Component\Container\Container;
 use Unity\Component\Container\Contracts\IContainer;
 use Unity\Component\Container\Dependency\DependencyResolver;
 use Unity\Component\Container\Exceptions\DuplicateIdException;
 use Unity\Component\Container\Exceptions\NotFoundException;
-use Unity\Component\Container\Container;
 
 /**
  * @author Eleandro Duzentos <eleandro@inbox.ru>
@@ -49,7 +49,7 @@ class ContainerTest extends TestCase
         $container = $this->getContainer();
 
         $this->assertFalse($container->hasBind(IFoo::class));
-        $instance = $container->bind(IFoo::class, function (){
+        $instance = $container->bind(IFoo::class, function () {
             return new Foo(new Bar());
         });
 
@@ -86,7 +86,7 @@ class ContainerTest extends TestCase
         $this->assertSame($instance, $container->get('bar'));
     }
 
-    public  function testHasBind()
+    public function testHasBind()
     {
         $container = $this->getContainer();
 

@@ -97,7 +97,9 @@ class DependencyResolverTest extends TestCase
     {
         $dependencyResolver = $this->getAccessibleResolver();
 
-        $dependencyResolver->entry = function () { return new Bar(); };
+        $dependencyResolver->entry = function () {
+            return new Bar();
+        };
 
         $instance = $dependencyResolver->make();
 
@@ -142,7 +144,7 @@ class DependencyResolverTest extends TestCase
     }
 
     /**
-     * @param mixed  $entry The resolver entry.
+     * @param mixed  $entry             The resolver entry.
      * @param object $dependencyFactory The dependencyFactory dependency.
      */
     public function getDependencyResolver($entry = null, $dependencyFactory = null)
@@ -176,9 +178,7 @@ class DependencyResolverTest extends TestCase
     }
 
     /**
-     *
-     *
-     * @param mixed  $entry The resolver entry.
+     * @param mixed  $entry             The resolver entry.
      * @param object $dependencyFactory The dependencyFactory dependency.
      */
     public function getAccessibleResolver($entry = null, $dependencyFactory = null)
