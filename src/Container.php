@@ -2,12 +2,12 @@
 
 namespace Unity\Component\Container;
 
-use Psr\Container\ContainerExceptionInterface;
-use Psr\Container\NotFoundExceptionInterface;
-use Unity\Component\Container\Bind\BindResolver;
 use Unity\Component\Container\Contracts\IContainer;
-use Unity\Component\Container\Dependency\DependencyFactory;
-use Unity\Component\Container\Dependency\DependencyResolver;
+use Unity\Component\Container\Contracts\IServiceProvider;
+use Unity\Component\Container\Contracts\IDependencyFactory;
+use Unity\Component\Container\Contracts\IBindResolverFactory;
+use Unity\Component\Container\Contracts\IDependencyResolverFactory;
+use Unity\Component\Container\Contracts\IDependencyResolver;
 use Unity\Component\Container\Exceptions\DuplicateIdException;
 use Unity\Component\Container\Exceptions\NotFoundException;
 
@@ -26,42 +26,57 @@ class Container implements IContainer
     protected $canUseAnnotations = true;
 
     protected $dependencyFactory;
+    protected $dependencyResolverFactory;
+    protected $bindResolverFactory;
 
     /**
-     * Sets the `DependencyFactory` instance.
+     * Container constructor.
      *
-     * @param DependencyFactory $dependencyFactory
+     * @param IDependencyFactory $dependencyFactory
+     * @param IDependencyResolverFactory $dependencyResolverFactory
+     * @param IBindResolverFactory $bindResolverFactory
      */
-    public function setDependencyFactory(DependencyFactory $dependencyFactory)
-    {
+    public function __construct(
+        IDependencyFactory $dependencyFactory,
+        IDependencyResolverFactory $dependencyResolverFactory,
+        IBindResolverFactory $bindResolverFactory
+    ) {
         $this->dependencyFactory = $dependencyFactory;
+        $this->dependencyResolverFactory = $dependencyResolverFactory;
+        $this->bindResolverFactory = $bindResolverFactory;
+
+        ////////////////////////////////////////////////
+        // `DependencyFactory` needs `$this` instance //
+        ////////////////////////////////////////////////
+        $dependencyFactory->setContainer($this);
     }
 
     /**
-     * Register a dependency resolver.
+     * Sets a dependency resolver.
      *
      * @param string $id
      * @param mixed  $entry Content that will be used to generate the dependency.
      *
      * @throws DuplicateIdException
      *
-     * @return DependencyResolver
+     * @return IDependencyResolver
      */
-    public function register($id, $entry)
+    public function set($id, $entry)
     {
         if ($this->has($id)) {
             throw new DuplicateIdException("The container already has a dependency resolver for id \"{$id}\".");
         }
 
-        return $this->resolvers[$id] = new DependencyResolver(
-            $entry,
-            $this->dependencyFactory,
-            $this
-        );
+        return $this->resolvers[$id] = $this
+            ->dependencyResolverFactory->make(
+                $entry,
+                $this->dependencyFactory,
+                $this
+            );
     }
 
     /**
-     * Unregister a resolver.
+     * Unsets a resolver.
      *
      * @param string $id
      *
@@ -69,7 +84,7 @@ class Container implements IContainer
      *
      * @return Container
      */
-    public function unregister($id)
+    public function unset($id)
     {
         if (!$this->has($id)) {
             throw new NotFoundException("No dependency resolver was founded for id \"{$id}\" on the container.");
@@ -81,23 +96,24 @@ class Container implements IContainer
     }
 
     /**
-     * Replaces a registered resolver.
+     * Replaces a resolver.
      *
      * This method does'nt replaces dependencies already resolved by the container.
      *
      * @param string $id
-     * @param mixed  $entry
-     *                      Content that will be used to resolve the dependency.
+     * @param mixed  $entry Content that will be used to resolve the dependency.
      *
-     * @return DependencyResolver
+     * @return IDependencyResolver
      */
     public function replace($id, $entry)
     {
-        return $this->resolvers[$id] = new DependencyResolver(
+        $resolver = $this->dependencyResolverFactory->make(
             $entry,
             $this->dependencyFactory,
             $this
         );
+
+        return $this->resolvers[$id] = $resolver;
     }
 
     /**
@@ -142,7 +158,7 @@ class Container implements IContainer
      *
      * @return mixed
      */
-    public function make($id, $params = null)
+    public function make($id, $params = [])
     {
         if ($this->has($id)) {
             return $this->resolvers[$id]->make($params);
@@ -168,7 +184,7 @@ class Container implements IContainer
      */
     public function bind(string $class, $callback)
     {
-        $this->binds[$class] = new BindResolver($callback, $this);
+        $this->binds[$class] = $this->bindResolverFactory->make($callback, $this);
 
         return $this;
     }
@@ -197,6 +213,30 @@ class Container implements IContainer
         }
 
         throw new NotFoundException("No resolver was bound to class \"{$class}\" on the container.");
+    }
+
+    /**
+     * Sets an `IServiceProviders`.
+     *
+     * @param IServiceProvider $serviceProvider A service provider.
+     */
+    public function setServiceProvider(IServiceProvider $serviceProvider)
+    {
+        foreach ($serviceProvider->register() as $key => $service) {
+            $this->set(key($service), $service);
+        }
+    }
+
+    /**
+     * Sets a collection of service providers.
+     *
+     * @param array $serviceProviders An array containing `IServiceProvider`s.
+     */
+    public function setServiceProviders(array $serviceProviders)
+    {
+        foreach ($serviceProviders as $serviceProvider) {
+            $this->setServiceProvider($serviceProvider);
+        }
     }
 
     /**
@@ -259,7 +299,7 @@ class Container implements IContainer
 
     public function __set($id, $entry)
     {
-        $this->register($id, $entry);
+        $this->set($id, $entry);
     }
 
     /**
@@ -305,7 +345,7 @@ class Container implements IContainer
      */
     public function offsetSet($id, $entry)
     {
-        $this->register($id, $entry);
+        $this->set($id, $entry);
     }
 
     /**
@@ -315,6 +355,6 @@ class Container implements IContainer
      */
     public function offsetUnset($id)
     {
-        $this->unregister($id);
+        $this->unset($id);
     }
 }
