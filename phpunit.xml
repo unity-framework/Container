@@ -8,6 +8,8 @@
 >
     <testsuites>
         <testsuite name="Test Suite">
+            <file>tests/DependencyResolverFactoryTest.php</file>
+            <file>tests/BindResolverFactoryTest.php</file>
             <file>tests/BindResolverTest.php</file>
             <file>tests/DependencyFactoryTest.php</file>
             <file>tests/DependencyResolverTest.php</file>
