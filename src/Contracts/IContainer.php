@@ -14,7 +14,7 @@ use Psr\Container\ContainerInterface;
 interface IContainer extends ContainerInterface, ArrayAccess, Countable
 {
     /**
-     * Register a dependency resolver.
+     * Sets a dependency resolver.
      *
      * @param string $id
      * @param mixed  $entry Content that will be used to generate the dependency.
@@ -23,10 +23,10 @@ interface IContainer extends ContainerInterface, ArrayAccess, Countable
      *
      * @return DependencyResolver
      */
-    public function register($id, $entry);
+    public function set($id, $entry);
 
     /**
-     * Unregister a resolver.
+     * Unset a resolver.
      *
      * @param string $id
      *
@@ -34,7 +34,7 @@ interface IContainer extends ContainerInterface, ArrayAccess, Countable
      *
      * @return Container
      */
-    public function unregister($id);
+    public function unset($id);
 
     /**
      * Replaces a registered resolver.
@@ -115,6 +115,20 @@ interface IContainer extends ContainerInterface, ArrayAccess, Countable
      * @return bool
      */
     public function isBound(string $class);
+
+    /**
+     * Sets a collection of service providers.
+     *
+     * @param array $serviceProviders An array containing `IServiceProvider`s.
+     */
+    public function setServiceProviders(array $serviceProviders);
+
+    /**
+     * Sets an `IServiceProviders`.
+     *
+     * @param IServiceProvider $serviceProvider A service provider.
+     */
+    public function setServiceProvider(IServiceProvider $serviceProvider);
 
     /**
      * Enable|Disable autowiring.
