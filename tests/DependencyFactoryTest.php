@@ -19,6 +19,19 @@ use Unity\Reflector\Reflector;
  */
 class DependencyFactoryTest extends TestBase
 {
+    public function testSetContainer()
+    {
+        $container = $this->mockContainer();
+
+        $df = $this->getDependencyFactory();
+
+        $adf = Make::accessible($df);
+
+        $df->setContainer($container);
+
+        $this->assertSame($container, $adf->container);
+    }
+
     public function testGetTagValue()
     {
         $df = $this->getAccessibleDependencyFactory();
@@ -58,7 +71,7 @@ class DependencyFactoryTest extends TestBase
      *
      * @covers DependencyFactory::giveConstructorArgs()
      */
-    public function testGetConstructoArgsWithGivenDependencies()
+    public function testGetConstructorArgsWithGivenDependencies()
     {
         $df = $this->getAccessibleDependencyFactory();
 
@@ -78,14 +91,14 @@ class DependencyFactoryTest extends TestBase
      *
      * @covers DependencyFactory::giveConstructorArgs()
      */
-    public function testGetConstructoArgsWithBoundArgs()
+    public function testGetConstructorArgsWithBoundArgs()
     {
         $containerMock = $this->mockContainer();
 
-        /************************************************************************************
-         * We need to tell to `DependencyFactory` that the `Bound` class constructor        *
-         * parameter `Container::isBound()` and then give the `Container::getBoundValue()`. *
-         ************************************************************************************/
+        /*************************************************************************
+         * We need to tell to `DependencyFactory` that `Bound` class constructor *
+         * param is bound and then give to it the bounded value.                 *
+         *************************************************************************/
         $containerMock
             ->expects($this->once())
             ->method('isBound')
@@ -113,7 +126,7 @@ class DependencyFactoryTest extends TestBase
      *
      * @covers DependencyFactory::giveConstructorArgs()
      */
-    public function testGetConstructoArgsWithAutowiring()
+    public function testGetConstructorArgsWithAutowiring()
     {
         $containerMock = $this->mockContainer();
 
@@ -176,12 +189,24 @@ class DependencyFactoryTest extends TestBase
         $df->injectPropertyDependencies($refClass, $instance);
 
         //////////////////////////////////////////////////////////////////////////////
-        // Since `WithProperties` propeties are protected, we make them accessible. //
+        // Since `WithProperties` properties are protected, we make them accessible. //
         //////////////////////////////////////////////////////////////////////////////
-        $accessibleWithPropeties = Make::accessible($instance);
+        $accessibleWithProperties = Make::accessible($instance);
 
-        $this->assertInstanceOf(Bar::class, $accessibleWithPropeties->bar);
-        $this->assertInstanceOf(stdClass::class, $accessibleWithPropeties->std);
+        $this->assertInstanceOf(Bar::class, $accessibleWithProperties->bar);
+        $this->assertInstanceOf(stdClass::class, $accessibleWithProperties->std);
+
+        /****************************************************************************
+         * When `DependencyFactory` calls `Container::get()`, we'll return true.    *
+         * Here, we're testing if `DependencyFactory::injectPropertyDependencies()` *
+         * can inject container entries.                                            *
+         ****************************************************************************/
+        /*$containerMock
+            ->expects($this->once())
+            ->method('get')
+            ->willReturn(true);
+
+        $this->assertTrue($accessibleWithProperties->boolean);*/
     }
 
     public function testMake()
@@ -225,7 +250,11 @@ class DependencyFactoryTest extends TestBase
             $container = $this->mockContainer();
         }
 
-        return new DependencyFactory($container, new Reflector());
+        $dependencyFactory = new DependencyFactory(new Reflector());
+
+        $dependencyFactory->setContainer($container);
+
+        return $dependencyFactory;
     }
 
     public function getAccessibleDependencyFactory($container = null)
