@@ -2,10 +2,12 @@
 
 namespace Unity\Component\Container\Dependency;
 
+use ReflectionClass;
 use phpDocumentor\Reflection\DocBlock\Tag;
 use phpDocumentor\Reflection\DocBlockFactory;
-use ReflectionClass;
 use Unity\Component\Container\Contracts\IContainer;
+use Unity\Component\Container\Contracts\IDependencyFactory;
+use Unity\Component\Container\Exceptions\ClassNotFoundException;
 use Unity\Component\Container\Exceptions\NonInstantiableClassException;
 use Unity\Reflector\Reflector;
 
@@ -16,22 +18,37 @@ use Unity\Reflector\Reflector;
  *
  * @author Eleandro Duzentos <eleandro@inbox.ru>
  */
-class DependencyFactory
+class DependencyFactory implements IDependencyFactory
 {
     protected $instance;
+
+    /** @var IContainer */
     protected $container;
+    /** @var Reflector */
     protected $reflector;
 
     /**
      * DependencyBuilder constructor.
      *
-     * @param IContainer $container
-     * @param Reflector  $reflector
+     * @param Reflector $reflector
      */
-    public function __construct(IContainer $container, Reflector $reflector)
+    public function __construct(Reflector $reflector)
+    {
+        $this->reflector = $reflector;
+    }
+
+    /**
+     * Sets the Container instance.
+     *
+     * Since this is a dependency of the container and the container
+     * is a dependency of this, this is the best way i found to decouple
+     * each other.
+     *
+     * @param IContainer $container
+     */
+    public function setContainer(IContainer $container)
     {
         $this->container = $container;
-        $this->reflector = $reflector;
     }
 
     /**
@@ -68,80 +85,8 @@ class DependencyFactory
     }
 
     /**
-     * Inject dependencies into properties based on their DocBlock.
-     *
-     * @param ReflectionClass $redClass
-     * @param object          $instance
-     */
-    protected function injectPropertyDependencies($redClass, $instance)
-    {
-        $dcInstance = DocBlockFactory::createInstance();
-
-        ////////////////////////////
-        // Reading all properties //
-        ////////////////////////////
-        foreach ($redClass->getProperties() as $property) {
-            $dc = $dcInstance->create($property);
-
-            ////////////////////////////////
-            // Has tag @inject and @var?? //
-            ////////////////////////////////
-            if ($dc->hasTag('inject') && $dc->hasTag('var')) {
-                $varTags = $dc->getTagsByName('var');
-
-                ///////////////////////////////////////////////////////////////////////////
-                // DocBlock returns a collection of tags, its the last one that matters. //
-                ///////////////////////////////////////////////////////////////////////////
-                $tag = end($varTags);
-
-                /************************************************************************
-                 * Tag value is the text next to the tag, e.g.: @var Unity\Support\Str, *
-                 * where "Unity\Support\Str" is the value.                              *
-                 ***********************************************************************/
-                $class = $this->getTagValue($tag);
-
-                $classInstance = $this->innerMake($class);
-
-                /****************************************************************************
-                 * Make the instance accessible in case of a protected or private property. *
-                 * Thats why this type of injection isn't recommend, because its breaks     *
-                 * encapsulation.                                                           *
-                 ****************************************************************************/
-                $this->reflector->makeAccessibleIfInaccessible($property);
-
-                ////////////////////////////////////////////////
-                // Here we inject the value. And... Thats it. //
-                ////////////////////////////////////////////////
-                $property->setValue($instance, $classInstance);
-            }
-        }
-    }
-
-    /**
-     * Gets a DockBlock tag value.
-     *
-     * @param Tag $tag
-     *
-     * @return string
-     */
-    protected function getTagValue(Tag $tag)
-    {
-        $exp = explode(' ', $tag->render());
-
-        $value = end($exp);
-
-        if (empty($value) || strpos($value, 'var') !== false) {
-            return false;
-        } else {
-            return $value;
-        }
-    }
-
-    /**
      * @param $dependencies
      * @param ReflectionClass $refClass
-     *
-     * @throws MissingConstructorArgumentException
      *
      * @return array
      */
@@ -190,15 +135,99 @@ class DependencyFactory
     }
 
     /**
+     * Inject dependencies into properties based on their DocBlock.
+     *
+     * @param ReflectionClass $redClass
+     * @param object          $instance
+     */
+    protected function injectPropertyDependencies($redClass, $instance)
+    {
+        $dcInstance = DocBlockFactory::createInstance();
+
+        ////////////////////////////
+        // Reading all properties //
+        ////////////////////////////
+        foreach ($redClass->getProperties() as $property) {
+            $dc = $dcInstance->create($property);
+
+            ////////////////////////////////
+            // Has tag @inject and @var?? //
+            ////////////////////////////////
+            if ($dc->hasTag('inject') && $dc->hasTag('var')) {
+                $varTags = $dc->getTagsByName('var');
+
+                ///////////////////////////////////////////////////////////////////////////
+                // DocBlock returns a collection of tags, its the last one that matters. //
+                ///////////////////////////////////////////////////////////////////////////
+                $tag = end($varTags);
+
+                /*************************************************************************
+                 * Tag value is the text next to the tag, e.g.: "@var \Unity\Support\Str"*
+                 * where "Unity\Support\Str" is the value.                               *
+                 ************************************************************************/
+                $class = $this->getTagValue($tag);
+
+                $classInstance = $this->innerMake($class);
+
+                /****************************************************************************
+                 * Make the instance accessible in case of a protected or private property. *
+                 * Thats why this type of injection isn't recommend, because its breaks     *
+                 * encapsulation.                                                           *
+                 ****************************************************************************/
+                $this->reflector->makeAccessibleIfInaccessible($property);
+
+                ////////////////////////////////////////////////
+                // Here we inject the value. And... Thats it. //
+                ////////////////////////////////////////////////
+                $property->setValue($instance, $classInstance);
+            }
+        }
+    }
+
+    /**
+     * Gets a DockBlock tag value.
+     *
+     * @param Tag $tag
+     *
+     * @return string
+     */
+    protected function getTagValue(Tag $tag)
+    {
+        $exp = explode(' ', $tag->render());
+
+        if (count($exp) != 2) {
+            return false;
+        }
+
+        $value = end($exp);
+
+        if (empty($value)) {
+            return false;
+        }
+
+        return $value;
+    }
+
+    /**
      * Makes internal DependencyFactory instances.
      *
      * Theses instances are needed when we are autowiring our dependencies.
      *
      * @param string $class Class name.
+     *
+     * @return mixed|object
+     *
+     * @throws ClassNotFoundException
      */
     protected function innerMake($class)
     {
-        $df = new self($this->container, $this->reflector);
+        if (!class_exists($class)) {
+            throw new ClassNotFoundException("Class '{$class}' not found.");
+        }
+
+        $df = new self($this->reflector);
+
+        $df->setContainer($this->container);
 
         $instance = $df->make($class);
 
