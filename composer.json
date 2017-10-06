@@ -1,7 +1,7 @@
 {
     "name": "unity/container",
-    "version": "2.0.0",
-    "description": "The Unity framework psr-11 implementation",
+    "version": "2.0.0-beta.0",
+    "description": "Unity framework dependency manager.",
     "type": "library",
     "license": "MIT",
     "authors": [
