@@ -4,6 +4,8 @@ namespace Unity\Component\Container\Dependency;
 
 use Psr\Container\ContainerExceptionInterface;
 use Unity\Component\Container\Contracts\IContainer;
+use Unity\Component\Container\Contracts\IDependencyFactory;
+use Unity\Component\Container\Contracts\IDependencyResolver;
 
 /**
  * Class DependencyResolver.
@@ -12,18 +14,19 @@ use Unity\Component\Container\Contracts\IContainer;
  *
  * @author Eleandro Duzentos <eleandro@inbox.ru>
  */
-class DependencyResolver
+class DependencyResolver implements IDependencyResolver
 {
     protected $entry;
     protected $singleton;
     protected $arguments = [];
+    protected $protectEntry = false;
 
     protected $dependencyFactory;
     protected $container;
 
     public function __construct(
                           $entry,
-        DependencyFactory $dependencyFactory,
+        IDependencyFactory $dependencyFactory,
         IContainer        $container
         ) {
         $this->entry = $entry;
@@ -53,38 +56,59 @@ class DependencyResolver
      *
      * @return mixed
      */
-    public function make($arguments = null)
+    public function make($arguments = [])
     {
         $entry = $this->getEntry();
 
-        /*
-         * This will merge `DependencyResolver::$arguments`
-         * with `$arguments`.
-         *
-         * Items on the `DependencyResolver::$arguments`
-         * with the same key as items on `$arguments`
-         * will be overwritten.
-         */
-        if (!is_null($arguments)) {
-            $arguments = array_merge($this->getArguments(), $arguments);
+        if (!$this->protectEntry) {
+            /****************************************************
+             * This will merge `DependencyResolver::$arguments` *
+             * with `$arguments`.                               *
+             *                                                  *
+             * Items on the `DependencyResolver::$arguments`    *
+             * with the same key as items on `$arguments`       *
+             * will be overwritten.                             *
+             ****************************************************/
+            if (!empty($arguments)) {
+                $arguments = array_merge($this->getArguments(), $arguments);
+            }
+
+            //////////////////////////////////////////////////////////////////////////
+            // If our entry is a string and is an existing class, let's make it. :) //
+            //////////////////////////////////////////////////////////////////////////
+            if (is_string($entry) && class_exists($entry)) {
+                return $this->dependencyFactory->make($entry, $arguments);
+            }
+
+            /////////////////////////////////////////////////////////////////////
+            // If our entry is a callable, lets call it and return the output. //
+            /////////////////////////////////////////////////////////////////////
+            if (is_callable($entry)) {
+                return call_user_func($entry, $this->container);
+            }
         }
 
-        //If our entry is a string and is an existing class, let's make it. :)
-        if (is_string($entry) && class_exists($entry)) {
-            return $this->dependencyFactory->make($entry, $arguments);
-        }
-
-        // If our entry is a callable, lets call it and return the output.
-        if (is_callable($entry)) {
-            return call_user_func($entry, $this->container);
-        }
-
-        /*
-         * If we're here, that means our entry isn't a class, or either a callable.
-         *
-         * In this case, we return the entry data.
-         */
+        /****************************************************************************
+         * If we're here, that means our entry isn't a class, or either a callable. *
+         *                                                                          *
+         * In this case, we return the entry data.                                  *
+         ****************************************************************************/
         return $entry;
+    }
+
+    /**
+     * Prevents the entry from being resolved
+     * causing its imediactly return.
+     *
+     * @param bool $enabled
+     *
+     * @return DependencyResolver
+     */
+    public function protect($enabled = true)
+    {
+        $this->protectEntry = $enabled;
+
+        return $this;
     }
 
     /**
@@ -146,8 +170,6 @@ class DependencyResolver
      * Sets the singleton dependency.
      *
      * @param $dependency
-     *
-     * @return mixed
      */
     protected function setSingleton($dependency)
     {
