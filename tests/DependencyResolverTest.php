@@ -2,15 +2,14 @@
 
 use e200\MakeAccessible\Make;
 use Helpers\Bar;
-use PHPUnit\Framework\TestCase;
+use Helpers\Mocks\TestBase;
 use Unity\Component\Container\Contracts\IContainer;
-use Unity\Component\Container\Dependency\DependencyFactory;
 use Unity\Component\Container\Dependency\DependencyResolver;
 
 /**
  * @author Eleandro Duzentos <eleandro@inbox.ru>
  */
-class DependencyResolverTest extends TestCase
+class DependencyResolverTest extends TestBase
 {
     public function testGetEntry()
     {
@@ -48,18 +47,18 @@ class DependencyResolverTest extends TestCase
     {
         $dependencyResolver = $this->getAccessibleResolver();
 
-        $dependencyResolver->setSingleton(200);
+        $dependencyResolver->setSingleton(true);
 
-        $this->assertEquals(200, $dependencyResolver->singleton);
+        $this->assertTrue($dependencyResolver->singleton);
     }
 
     public function testGetSingleton()
     {
         $dependencyResolver = $this->getAccessibleResolver();
 
-        $dependencyResolver->singleton = 200;
+        $dependencyResolver->singleton = true;
 
-        $this->assertEquals(200, $dependencyResolver->getSingleton());
+        $this->assertTrue($dependencyResolver->getSingleton());
     }
 
     public function testHasSingleton()
@@ -73,9 +72,23 @@ class DependencyResolverTest extends TestCase
         $this->assertTrue($dependencyResolver->hasSingleton());
     }
 
+    public function testProtect()
+    {
+        $dependencyResolver = $this->getAccessibleResolver();
+
+        $this->assertFalse($dependencyResolver->protectEntry);
+
+        $dependencyResolver->protect();
+        $this->assertTrue($dependencyResolver->protectEntry);
+        $dependencyResolver->protect(false);
+        $this->assertFalse($dependencyResolver->protectEntry);
+        $dependencyResolver->protect(true);
+        $this->assertTrue($dependencyResolver->protectEntry);
+    }
+
     public function testMakeWithClassName()
     {
-        $dependencyFactory = $this->getDependencyFactoryMock();
+        $dependencyFactory = $this->mockDependencyFactory();
 
         $dependencyFactory
             ->expects($this->exactly(2))
@@ -115,6 +128,21 @@ class DependencyResolverTest extends TestCase
         $this->assertEquals('e200', $value);
     }
 
+    public function testMakeWithProtectedResolver()
+    {
+        $dependencyResolver = $this->getAccessibleResolver(function () { return '3.1415923565897931'; });
+
+        //////////////////////////////////////
+        // Setting the protectEntry as true //
+        //////////////////////////////////////
+        $dependencyResolver->protectEntry = true;
+
+        $value = $dependencyResolver->make();
+
+        $this->assertNotEquals('3.1415923565897931', $value);
+        $this->assertInternalType('callable', $value);
+    }
+
     /*public function testResolve()
     {
         $dependencyResolver = $this->getDependencyResolver();
@@ -136,16 +164,11 @@ class DependencyResolverTest extends TestCase
         return $containerMock;
     }
 
-    public function getDependencyFactoryMock()
-    {
-        $dependencyFactory = $this->createMock(DependencyFactory::class);
-
-        return $dependencyFactory;
-    }
-
     /**
-     * @param mixed  $entry             The resolver entry.
+     * @param mixed $entry The resolver entry.
      * @param object $dependencyFactory The dependencyFactory dependency.
+     *
+     * @return DependencyResolver
      */
     public function getDependencyResolver($entry = null, $dependencyFactory = null)
     {
@@ -165,10 +188,10 @@ class DependencyResolverTest extends TestCase
          *
          * Some tests also needs to pass a `$dependencyFactory` mock with
          * a specific behaviour, in such case we let these methods
-         * provide their own specific mockups using the `$dependencyFactory`
+         * provide their own mocks using the `$dependencyFactory`
          * argument.
          */
-        $dependencyFactory = $dependencyFactory ?? $this->getDependencyFactoryMock();
+        $dependencyFactory = $dependencyFactory ?? $this->mockDependencyFactory();
 
         return new DependencyResolver(
             $entry,
@@ -178,8 +201,10 @@ class DependencyResolverTest extends TestCase
     }
 
     /**
-     * @param mixed  $entry             The resolver entry.
+     * @param mixed $entry The resolver entry.
      * @param object $dependencyFactory The dependencyFactory dependency.
+     *
+     * @return \e200\MakeAccessible\AccessibleInstance
      */
     public function getAccessibleResolver($entry = null, $dependencyFactory = null)
     {
