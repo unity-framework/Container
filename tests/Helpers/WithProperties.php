@@ -17,4 +17,17 @@ class WithProperties
      * @var \stdClass
      */
     protected $std;
+
+    /**
+     * @inject value.
+     *
+     * Used to test if DependencyFactory can inject
+     * container entries.
+     *
+     * In this case, our entry is a boolean, but it can be
+     * any kind of value.
+     *
+     * @var bool
+     */
+    //protected $boolean;
 }
