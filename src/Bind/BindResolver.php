@@ -3,13 +3,16 @@
 namespace Unity\Component\Container\Bind;
 
 use Psr\Container\ContainerInterface;
+use Unity\Component\Container\Contracts\IBindResolver;
 
 /**
  * Class BindResolver.
  *
+ * Binds values to a class.
+ *
  * @author Eleandro Duzentos <eleandro@inbox.ru>
  */
-class BindResolver
+class BindResolver implements IBindResolver
 {
     protected $callback;
     protected $container;
