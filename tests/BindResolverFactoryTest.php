@@ -9,14 +9,15 @@ use Unity\Component\Container\Factories\BindResolverFactory;
  */
 class BindResolverFactoryTest extends TestBase
 {
-    function testMake()
+    public function testMake()
     {
         $container = $this->mockContainer();
 
         $this->assertInstanceOf(
             IBindResolver::class,
             (new BindResolverFactory())->make(
-                function () {},
+                function () {
+                },
                 $container
             )
         );

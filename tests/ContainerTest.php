@@ -3,11 +3,10 @@
 use e200\MakeAccessible\Make;
 use Helpers\Mocks\TestBase;
 use Unity\Component\Container\Container;
-use Unity\Component\Container\Contracts\IServiceProvider;
 use Unity\Component\Container\Contracts\IDependencyResolver;
+use Unity\Component\Container\Contracts\IServiceProvider;
 use Unity\Component\Container\Exceptions\DuplicateIdException;
 use Unity\Component\Container\Exceptions\NotFoundException;
-use Helpers\Bar;
 
 /**
  * @author Eleandro Duzentos <eleandro@inbox.ru>
@@ -98,7 +97,8 @@ class ContainerTest extends TestBase
     {
         $container = $this->getContainer();
 
-        $returnedInstance = $container->bind('id', function() {});
+        $returnedInstance = $container->bind('id', function () {
+        });
 
         $this->assertInstanceOf(Container::class, $returnedInstance);
 
@@ -113,7 +113,8 @@ class ContainerTest extends TestBase
 
         $this->assertFalse($container->isBound('id'));
 
-        $container->bind('id', function() {});
+        $container->bind('id', function () {
+        });
 
         $this->assertTrue($container->isBound('id'));
     }
@@ -122,7 +123,8 @@ class ContainerTest extends TestBase
     {
         $container = $this->getContainer();
 
-        $container->bind('id', function () {});
+        $container->bind('id', function () {
+        });
 
         $this->assertTrue($container->getBoundValue('id'));
     }
@@ -205,12 +207,12 @@ class ContainerTest extends TestBase
     {
         $container = $this->getContainer();
 
-        $container->setServiceProvider(new class implements IServiceProvider {
+        $container->setServiceProvider(new class() implements IServiceProvider {
             public function register() : array
             {
                 return [
                     ['id1' => null],
-                    ['id2' => null]
+                    ['id2' => null],
                 ];
             }
         });
@@ -229,24 +231,24 @@ class ContainerTest extends TestBase
         $container = $this->getContainer();
 
         $container->setServiceProviders([
-            new class implements IServiceProvider {
+            new class() implements IServiceProvider {
                 public function register() : array
                 {
                     return [
                         ['id1' => null],
-                        ['id2' => null]
+                        ['id2' => null],
                     ];
                 }
             },
-            new class implements IServiceProvider {
+            new class() implements IServiceProvider {
                 public function register() : array
                 {
                     return [
                         ['id3' => null],
-                        ['id4' => null]
+                        ['id4' => null],
                     ];
                 }
-            }
+            },
         ]);
 
         ////////////////////////////////////////////
