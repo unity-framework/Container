@@ -9,7 +9,7 @@ use Unity\Component\Container\Factories\DependencyResolverFactory;
  */
 class DependencyResolverFactoryTest extends TestBase
 {
-    function testMake()
+    public function testMake()
     {
         $container = $this->mockContainer();
         $dependencyFactory = $this->mockDependencyFactory();

@@ -18,7 +18,7 @@ class WithProperties
      */
     protected $std;
 
-    /**
+    /*
      * @inject value.
      *
      * Used to test if DependencyFactory can inject

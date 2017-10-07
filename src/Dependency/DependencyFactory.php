@@ -2,9 +2,9 @@
 
 namespace Unity\Component\Container\Dependency;
 
-use ReflectionClass;
 use phpDocumentor\Reflection\DocBlock\Tag;
 use phpDocumentor\Reflection\DocBlockFactory;
+use ReflectionClass;
 use Unity\Component\Container\Contracts\IContainer;
 use Unity\Component\Container\Contracts\IDependencyFactory;
 use Unity\Component\Container\Exceptions\ClassNotFoundException;
@@ -215,9 +215,9 @@ class DependencyFactory implements IDependencyFactory
      *
      * @param string $class Class name.
      *
-     * @return mixed|object
-     *
      * @throws ClassNotFoundException
+     *
+     * @return mixed|object
      */
     protected function innerMake($class)
     {

@@ -2,12 +2,12 @@
 
 namespace Unity\Component\Container;
 
-use Unity\Component\Container\Contracts\IContainer;
-use Unity\Component\Container\Contracts\IServiceProvider;
-use Unity\Component\Container\Contracts\IDependencyFactory;
 use Unity\Component\Container\Contracts\IBindResolverFactory;
-use Unity\Component\Container\Contracts\IDependencyResolverFactory;
+use Unity\Component\Container\Contracts\IContainer;
+use Unity\Component\Container\Contracts\IDependencyFactory;
 use Unity\Component\Container\Contracts\IDependencyResolver;
+use Unity\Component\Container\Contracts\IDependencyResolverFactory;
+use Unity\Component\Container\Contracts\IServiceProvider;
 use Unity\Component\Container\Exceptions\DuplicateIdException;
 use Unity\Component\Container\Exceptions\NotFoundException;
 
@@ -32,9 +32,9 @@ class Container implements IContainer
     /**
      * Container constructor.
      *
-     * @param IDependencyFactory $dependencyFactory
+     * @param IDependencyFactory         $dependencyFactory
      * @param IDependencyResolverFactory $dependencyResolverFactory
-     * @param IBindResolverFactory $bindResolverFactory
+     * @param IBindResolverFactory       $bindResolverFactory
      */
     public function __construct(
         IDependencyFactory $dependencyFactory,

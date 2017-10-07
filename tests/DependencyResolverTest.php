@@ -130,7 +130,9 @@ class DependencyResolverTest extends TestBase
 
     public function testMakeWithProtectedResolver()
     {
-        $dependencyResolver = $this->getAccessibleResolver(function () { return '3.1415923565897931'; });
+        $dependencyResolver = $this->getAccessibleResolver(function () {
+            return '3.1415923565897931';
+        });
 
         //////////////////////////////////////
         // Setting the protectEntry as true //
@@ -165,7 +167,7 @@ class DependencyResolverTest extends TestBase
     }
 
     /**
-     * @param mixed $entry The resolver entry.
+     * @param mixed  $entry             The resolver entry.
      * @param object $dependencyFactory The dependencyFactory dependency.
      *
      * @return DependencyResolver
@@ -201,7 +203,7 @@ class DependencyResolverTest extends TestBase
     }
 
     /**
-     * @param mixed $entry The resolver entry.
+     * @param mixed  $entry             The resolver entry.
      * @param object $dependencyFactory The dependencyFactory dependency.
      *
      * @return \e200\MakeAccessible\AccessibleInstance
