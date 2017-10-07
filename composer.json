@@ -21,12 +21,6 @@
         "phpunit/phpunit": "^6.2",
         "make/accessible": "^2.0"
     },
-    "repositories": [
-        {
-          "type": "vcs",
-          "url": "../Reflector"
-        }
-    ],
     "autoload": {
 	    "psr-4": {
             "Unity\\Component\\Container\\": "src/"
