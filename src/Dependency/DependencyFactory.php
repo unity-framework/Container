@@ -174,7 +174,7 @@ class DependencyFactory implements IDependencyFactory
                  * Thats why this type of injection isn't recommend, because its breaks     *
                  * encapsulation.                                                           *
                  ****************************************************************************/
-                $this->reflector->makeAccessibleIfInaccessible($property);
+                $this->reflector->makeAccessibleIfNot($property);
 
                 ////////////////////////////////////////////////
                 // Here we inject the value. And... Thats it. //
