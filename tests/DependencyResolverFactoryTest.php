@@ -1,8 +1,8 @@
 <?php
 
 use Helpers\Mocks\TestBase;
-use Unity\Component\Container\Contracts\IDependencyResolver;
 use Unity\Component\Container\Factories\DependencyResolverFactory;
+use Unity\Contracts\Container\Dependency\IDependencyResolver;
 
 /**
  * @author Eleandro Duzentos <eleandro@inbox.ru>

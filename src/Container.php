@@ -2,14 +2,16 @@
 
 namespace Unity\Component\Container;
 
-use Unity\Component\Container\Contracts\IBindResolverFactory;
-use Unity\Component\Container\Contracts\IContainer;
-use Unity\Component\Container\Contracts\IDependencyFactory;
-use Unity\Component\Container\Contracts\IDependencyResolver;
-use Unity\Component\Container\Contracts\IDependencyResolverFactory;
-use Unity\Component\Container\Contracts\IServiceProvider;
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\NotFoundExceptionInterface;
 use Unity\Component\Container\Exceptions\DuplicateIdException;
 use Unity\Component\Container\Exceptions\NotFoundException;
+use Unity\Contracts\Container\Dependency\IDependencyFactory;
+use Unity\Contracts\Container\Dependency\IDependencyResolver;
+use Unity\Contracts\Container\Factories\IBindResolverFactory;
+use Unity\Contracts\Container\Factories\IDependencyResolverFactory;
+use Unity\Contracts\Container\IContainer;
+use Unity\Contracts\Container\IServiceProvider;
 
 /**
  * Class Container.
@@ -222,7 +224,7 @@ class Container implements IContainer
      */
     public function setServiceProvider(IServiceProvider $serviceProvider)
     {
-        foreach ($serviceProvider->register() as $key => $service) {
+        foreach ($serviceProvider->register($this) as $key => $service) {
             $this->set(key($service), $service);
         }
     }

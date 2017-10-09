@@ -4,10 +4,10 @@ namespace Helpers\Mocks;
 
 use PHPUnit\Framework\TestCase;
 use Unity\Component\Container\Container;
-use Unity\Component\Container\Contracts\IBindResolverFactory;
-use Unity\Component\Container\Contracts\IDependencyFactory;
-use Unity\Component\Container\Contracts\IDependencyResolver;
-use Unity\Component\Container\Contracts\IDependencyResolverFactory;
+use Unity\Contracts\Container\Dependency\IDependencyFactory;
+use Unity\Contracts\Container\Dependency\IDependencyResolver;
+use Unity\Contracts\Container\Factories\IBindResolverFactory;
+use Unity\Contracts\Container\Factories\IDependencyResolverFactory;
 
 class TestBase extends TestCase
 {

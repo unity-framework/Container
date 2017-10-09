@@ -3,9 +3,9 @@
 namespace Unity\Component\Container\Dependency;
 
 use Psr\Container\ContainerExceptionInterface;
-use Unity\Component\Container\Contracts\IContainer;
-use Unity\Component\Container\Contracts\IDependencyFactory;
-use Unity\Component\Container\Contracts\IDependencyResolver;
+use Unity\Contracts\Container\Dependency\IDependencyFactory;
+use Unity\Contracts\Container\Dependency\IDependencyResolver;
+use Unity\Contracts\Container\IContainer;
 
 /**
  * Class DependencyResolver.

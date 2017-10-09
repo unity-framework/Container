@@ -5,10 +5,10 @@ namespace Unity\Component\Container\Dependency;
 use phpDocumentor\Reflection\DocBlock\Tag;
 use phpDocumentor\Reflection\DocBlockFactory;
 use ReflectionClass;
-use Unity\Component\Container\Contracts\IContainer;
-use Unity\Component\Container\Contracts\IDependencyFactory;
 use Unity\Component\Container\Exceptions\ClassNotFoundException;
 use Unity\Component\Container\Exceptions\NonInstantiableClassException;
+use Unity\Contracts\Container\Dependency\IDependencyFactory;
+use Unity\Contracts\Container\IContainer;
 use Unity\Reflector\Reflector;
 
 /**
@@ -63,7 +63,7 @@ class DependencyFactory implements IDependencyFactory
      */
     public function make($class, $dependencies = [])
     {
-        $refClass = $this->reflector::reflect($class);
+        $refClass = $this->reflector->reflect($class);
 
         if (!$refClass->isInstantiable()) {
             throw new NonInstantiableClassException("Class \"{$class}\" cannot be instantiated.");

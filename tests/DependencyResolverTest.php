@@ -3,8 +3,8 @@
 use e200\MakeAccessible\Make;
 use Helpers\Bar;
 use Helpers\Mocks\TestBase;
-use Unity\Component\Container\Contracts\IContainer;
 use Unity\Component\Container\Dependency\DependencyResolver;
+use Unity\Contracts\Container\IContainer;
 
 /**
  * @author Eleandro Duzentos <eleandro@inbox.ru>

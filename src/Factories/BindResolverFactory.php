@@ -4,8 +4,8 @@ namespace Unity\Component\Container\Factories;
 
 use Closure;
 use Unity\Component\Container\Bind\BindResolver;
-use Unity\Component\Container\Contracts\IBindResolverFactory;
-use Unity\Component\Container\Contracts\IContainer;
+use Unity\Contracts\Container\Factories\IBindResolverFactory;
+use Unity\Contracts\Container\IContainer;
 
 /**
  * Class BindResolverFactoryFactory.

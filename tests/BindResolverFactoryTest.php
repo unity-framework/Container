@@ -1,8 +1,8 @@
 <?php
 
 use Helpers\Mocks\TestBase;
-use Unity\Component\Container\Contracts\IBindResolver;
 use Unity\Component\Container\Factories\BindResolverFactory;
+use Unity\Contracts\Container\Bind\IBindResolver;
 
 /**
  * @author Eleandro Duzentos <eleandro@inbox.ru>

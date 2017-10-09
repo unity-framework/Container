@@ -3,10 +3,11 @@
 use e200\MakeAccessible\Make;
 use Helpers\Mocks\TestBase;
 use Unity\Component\Container\Container;
-use Unity\Component\Container\Contracts\IDependencyResolver;
-use Unity\Component\Container\Contracts\IServiceProvider;
 use Unity\Component\Container\Exceptions\DuplicateIdException;
 use Unity\Component\Container\Exceptions\NotFoundException;
+use Unity\Contracts\Container\Dependency\IDependencyResolver;
+use Unity\Contracts\Container\IContainer;
+use Unity\Contracts\Container\IServiceProvider;
 
 /**
  * @author Eleandro Duzentos <eleandro@inbox.ru>
@@ -164,11 +165,11 @@ class ContainerTest extends TestBase
          * Must be a string or the `DependencyResolverFactory` *
          * will not be called                                  *
          *******************************************************/
-        $container->set('id', '');
+        $container->set('id', true);
 
-        $instance1 = $container->make('id');
+        $value = $container->make('id');
 
-        $this->assertTrue(true);
+        $this->assertTrue($value);
     }
 
     public function testMakeWithParameters()
@@ -208,7 +209,7 @@ class ContainerTest extends TestBase
         $container = $this->getContainer();
 
         $container->setServiceProvider(new class() implements IServiceProvider {
-            public function register() : array
+            public function register(IContainer $container) : array
             {
                 return [
                     ['id1' => null],
@@ -232,7 +233,7 @@ class ContainerTest extends TestBase
 
         $container->setServiceProviders([
             new class() implements IServiceProvider {
-                public function register() : array
+                public function register(IContainer $container) : array
                 {
                     return [
                         ['id1' => null],
@@ -241,7 +242,7 @@ class ContainerTest extends TestBase
                 }
             },
             new class() implements IServiceProvider {
-                public function register() : array
+                public function register(IContainer $container) : array
                 {
                     return [
                         ['id3' => null],
@@ -347,12 +348,12 @@ class ContainerTest extends TestBase
             $dependencyResolverFactoryMock = $this->mockDependencyResolverFactory();
         }
 
-        $bindResolverFactory = $this->mockBindResolverFactory();
+        $bindResolverFactoryMock = $this->mockBindResolverFactory();
 
         return new Container(
             $dependencyFactoryMock,
             $dependencyResolverFactoryMock,
-            $bindResolverFactory
+            $bindResolverFactoryMock
         );
     }
 }
