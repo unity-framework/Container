@@ -77,19 +77,19 @@ class DependencyResolver implements IDependencyResolver
             if (!empty($arguments)) {
                 $arguments = array_merge($this->getArguments(), $arguments);
             }
+            
+            /////////////////////////////////////////////////////////////////////
+            // If our entry is a callable, lets call it and return the output. //
+            /////////////////////////////////////////////////////////////////////
+            if (is_callable($entry)) {
+                return call_user_func($entry, $this->container);
+            }
 
             //////////////////////////////////////////////////////////////////////////
             // If our entry is a string and is an existing class, let's make it. :) //
             //////////////////////////////////////////////////////////////////////////
             if (is_string($entry) && class_exists($entry)) {
                 return $this->dependencyFactory->make($entry, $arguments, $binds);
-            }
-
-            /////////////////////////////////////////////////////////////////////
-            // If our entry is a callable, lets call it and return the output. //
-            /////////////////////////////////////////////////////////////////////
-            if (is_callable($entry)) {
-                return call_user_func($entry, $this->container);
             }
         }
 
