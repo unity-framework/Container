@@ -77,7 +77,7 @@ class DependencyResolver implements IDependencyResolver
             if (!empty($arguments)) {
                 $arguments = array_merge($this->getArguments(), $arguments);
             }
-            
+
             /////////////////////////////////////////////////////////////////////
             // If our entry is a callable, lets call it and return the output. //
             /////////////////////////////////////////////////////////////////////
@@ -139,7 +139,7 @@ class DependencyResolver implements IDependencyResolver
     {
         return $this->arguments;
     }
-    
+
     /**
      * @param string $class
      * @param mixed  $callback
