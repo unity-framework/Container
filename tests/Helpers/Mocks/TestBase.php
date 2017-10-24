@@ -3,7 +3,7 @@
 namespace Helpers\Mocks;
 
 use PHPUnit\Framework\TestCase;
-use Unity\Component\Container\Container;
+use Unity\Contracts\Container\IContainer;
 use Unity\Contracts\Container\Dependency\IDependencyFactory;
 use Unity\Contracts\Container\Dependency\IDependencyResolver;
 use Unity\Contracts\Container\Factories\IBindResolverFactory;
@@ -13,7 +13,7 @@ class TestBase extends TestCase
 {
     public function mockContainer()
     {
-        return $this->createMock(Container::class);
+        return $this->createMock(IContainer::class);
     }
 
     public function mockDependencyFactory()
@@ -47,24 +47,12 @@ class TestBase extends TestCase
 
     public function mockBindResolverFactory()
     {
-        $br = $this->createMock(IDependencyResolver::class);
-
-        $br
-            ->expects($this->any())
-            ->method('resolve')
-            ->willReturn(true);
-
-        $br
-            ->expects($this->any())
-            ->method('make')
-            ->willReturn(true);
-
         $brf = $this->createMock(IBindResolverFactory::class);
 
         $brf
-            ->expects($this->any())
-            ->method('make')
-            ->willReturn($br);
+        ->expects($this->any())
+        ->method('make')
+        ->willReturn(true);
 
         return $brf;
     }
