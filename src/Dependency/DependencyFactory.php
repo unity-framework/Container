@@ -3,8 +3,6 @@
 namespace Unity\Component\Container\Dependency;
 
 use ReflectionClass;
-use phpDocumentor\Reflection\DocBlock\Tag;
-use phpDocumentor\Reflection\DocBlockFactory;
 use Unity\Reflector\Reflector;
 use Unity\Component\Container\Exceptions\ClassNotFoundException;
 use Unity\Component\Container\Exceptions\NonInstantiableClassException;
