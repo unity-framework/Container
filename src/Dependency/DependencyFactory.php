@@ -7,7 +7,6 @@ use Unity\Reflector\Reflector;
 use Unity\Component\Container\Exceptions\ClassNotFoundException;
 use Unity\Component\Container\Exceptions\NonInstantiableClassException;
 use Unity\Contracts\Container\Dependency\IDependencyFactory;
-use Unity\Contracts\Container\IContainer;
 
 /**
  * Class DependencyBuilder.
