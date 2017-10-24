@@ -172,13 +172,7 @@ class Container implements IContainer
      */
     public function setServiceProvider(IServiceProvider $serviceProvider)
     {
-        $services = $serviceProvider->register($this);
-
-        if (is_array($services)) {
-            foreach ($services as $serviceName => $service) {
-                $this->set($serviceName, $service);
-            }
-        }
+        $serviceProvider->register($this);
     }
 
     /**
