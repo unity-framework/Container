@@ -2,7 +2,6 @@
 
 namespace Unity\Component\Container;
 
-use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
 use Unity\Component\Container\Exceptions\DuplicateIdException;
 use Unity\Component\Container\Exceptions\NotFoundException;
@@ -30,7 +29,7 @@ class Container implements IContainer
 
     /** @var IDependencyResolverFactory */
     protected $dependencyResolverFactory;
-    /** @var IBindDependencyResolver */
+    /** @var IBindResolverFactory */
     protected $bindResolverFactory;
 
     /**
