@@ -3,6 +3,7 @@
 use Helpers\Foo;
 use Helpers\Bar;
 use Helpers\IFoo;
+use Helpers\Foobar;
 use Helpers\Bounded;
 use Helpers\Mocks\TestBase;
 use Helpers\WithConstructor;
@@ -91,12 +92,12 @@ class DependencyFactoryTest extends TestBase
         
         $df = $this->getAccessibleDependencyFactory();
 
-        $refClass = new ReflectionClass(Bounded::class);
+        $refClass = new ReflectionClass(Foobar::class);
 
         /////////////////////////////////////////////////////////////////////////////////
         // Since we're testing autowiring, there's no need to give explicit arguments. //
         /////////////////////////////////////////////////////////////////////////////////
-        $constructorArgs = $df->getConstructorArgs($refClass, [], [Bar::class => $bindResolverMock]);
+        $constructorArgs = $df->getConstructorArgs($refClass, [], [IFoo::class => $bindResolverMock]);
 
         $this->assertTrue($constructorArgs[0]);
     }

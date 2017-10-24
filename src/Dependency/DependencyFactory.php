@@ -103,24 +103,22 @@ class DependencyFactory implements IDependencyFactory
             if ($param->hasType()) {
                 $paramType = (string) $param->getType();
 
-                if (class_exists($paramType)) {
-                    /**********************************************************************
-                     * If there's an `IBindResolver` instance bound to this `$paramType`  *
-                     * we call the `IBindResolver::resolve()` and add the return value to *
-                     * `$resolvedParams`.                                                 *
-                     **********************************************************************/
-                    if (isset($binds[$paramType])) {
-                        $resolvedParams[$key] = $binds[$paramType]->resolve();
+                /**********************************************************************
+                 * If there's an `IBindResolver` instance bound to this `$paramType`  *
+                 * we call the `IBindResolver::resolve()` and add the return value to *
+                 * `$resolvedParams`.                                                 *
+                 **********************************************************************/
+                if (isset($binds[$paramType]) && interface_exists($paramType)) {
+                    $resolvedParams[$key] = $binds[$paramType]->resolve();
 
-                    //////////////////////////////////////////////////////////////////////////
-                    // We already have its parameter resolved, there's nothing more to do. //
-                    //////////////////////////////////////////////////////////////////////////
-                        continue;
-                    }
+                //////////////////////////////////////////////////////////////////////////
+                // We already have its parameter resolved, there's nothing more to do. //
+                //////////////////////////////////////////////////////////////////////////
+                    continue;
+                }
 
-                    if ($this->autoResolve) {
-                        $resolvedParams[$key] = $this->innerMake($paramType);
-                    }
+                if ($this->autoResolve && class_exists($paramType)) {
+                    $resolvedParams[$key] = $this->innerMake($paramType);
                 }
             }
         }

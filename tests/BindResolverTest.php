@@ -16,4 +16,20 @@ class BindResolverTest extends TestBase
 
         $this->assertTrue($bindResolver->resolve());
     }
+
+    public function testResolveWithContainer()
+    {
+        $containerMock = $this->mockContainer();
+
+        $containerMock
+            ->expects($this->once())
+            ->method('get')
+            ->willReturn(true);
+
+        $bindResolver = new BindResolver(function ($containerMock) {
+            return $containerMock->get(null);
+        }, $containerMock);
+
+        $this->assertTrue($bindResolver->resolve());
+    }
 }
