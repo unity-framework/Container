@@ -2,14 +2,14 @@
 
 namespace Unity\Component\Container\Dependency;
 
+use ReflectionClass;
 use phpDocumentor\Reflection\DocBlock\Tag;
 use phpDocumentor\Reflection\DocBlockFactory;
-use ReflectionClass;
+use Unity\Reflector\Reflector;
 use Unity\Component\Container\Exceptions\ClassNotFoundException;
 use Unity\Component\Container\Exceptions\NonInstantiableClassException;
 use Unity\Contracts\Container\Dependency\IDependencyFactory;
 use Unity\Contracts\Container\IContainer;
-use Unity\Reflector\Reflector;
 
 /**
  * Class DependencyBuilder.
@@ -20,10 +20,11 @@ use Unity\Reflector\Reflector;
  */
 class DependencyFactory implements IDependencyFactory
 {
-    protected $instance;
-
-    /** @var IContainer */
-    protected $container;
+    /** @var bool */
+    protected $autoResolve = true;
+    /** @var bool */
+    protected $useAnnotations = false;
+    
     /** @var Reflector */
     protected $reflector;
 
@@ -32,36 +33,25 @@ class DependencyFactory implements IDependencyFactory
      *
      * @param Reflector $reflector
      */
-    public function __construct(Reflector $reflector)
+    public function __construct($autoResolve, $useAnnotations, Reflector $reflector)
     {
+        $this->autoResolve = $autoResolve;
+        $this->useAnnotations = $useAnnotations;
         $this->reflector = $reflector;
-    }
-
-    /**
-     * Sets the Container instance.
-     *
-     * Since this is a dependency of the container and the container
-     * is a dependency of this, this is the best way i found to decouple
-     * each other.
-     *
-     * @param IContainer $container
-     */
-    public function setContainer(IContainer $container)
-    {
-        $this->container = $container;
     }
 
     /**
      * Makes a `$class` instance.
      *
-     * @param string $class        Class name.
-     * @param array  $dependencies Constructor dependencies.
-     *
-     * @throws NonInstantiableClassException
+     * @param string $class Class name.
+     * @param array $arguments Constructor arguments.
+     * @param array $binds
      *
      * @return mixed|object
+     *
+     * @throws NonInstantiableClassException
      */
-    public function make($class, $dependencies = [])
+    public function make($class, $arguments = [], $binds = [])
     {
         $refClass = $this->reflector->reflect($class);
 
@@ -70,27 +60,24 @@ class DependencyFactory implements IDependencyFactory
         }
 
         if ($this->reflector->hasRequiredParams($refClass)) {
-            $dependencies = $this->getConstructorArgs($dependencies, $refClass);
+            $arguments = $this->getConstructorArgs($refClass, $arguments, $binds);
 
-            $instance = $refClass->newInstanceArgs($dependencies);
+            $instance = $refClass->newInstanceArgs($arguments);
         } else {
-            $instance = $refClass->newInstanceWithoutConstructor();
-        }
-
-        if ($this->container->canUseAnnotations()) {
-            $this->injectPropertyDependencies($refClass, $instance);
+            $instance = $refClass->newInstance();
         }
 
         return $instance;
     }
 
     /**
-     * @param $dependencies
      * @param ReflectionClass $refClass
+     * @param array $arguments
+     * @param array $binds
      *
      * @return array
      */
-    protected function getConstructorArgs($dependencies, ReflectionClass $refClass)
+    protected function getConstructorArgs(ReflectionClass $refClass, $arguments, $binds)
     {
         /////////////////////////////////////////////////////////
         // Here we'll store each matched constructor parameter //
@@ -103,109 +90,45 @@ class DependencyFactory implements IDependencyFactory
         $params = $this->reflector->getConstructorParameters($refClass);
 
         foreach ($params as $key => $param) {
-            /*****************************************************************************
-             * If there's an explicit value for `$param` on `$dependencies` we add it to *
-             * $resolvedParams`.                                                         *
-             *****************************************************************************/
-            if (isset($dependencies[$key])) {
-                $resolvedParams[$key] = $dependencies[$key];
+            /**************************************************************************
+             * If there's an explicit value for `$param` on `$arguments` we add it to *
+             * `$resolvedParams`.                                                     *
+             **************************************************************************/
+            if (isset($arguments[$key])) {
+                $resolvedParams[$key] = $arguments[$key];
 
-                //////////////////////////////////////////////////////////////////////////
+                /////////////////////////////////////////////////////////////////////////
                 // We already have its parameter resolved, there's nothing more to do. //
-                //////////////////////////////////////////////////////////////////////////
+                /////////////////////////////////////////////////////////////////////////
                 continue;
             }
 
             if ($param->hasType()) {
                 $paramType = (string) $param->getType();
 
-                if ($this->container->isBound($paramType)) {
-                    $resolvedParams[$key] = $this->container->getBoundValue($paramType);
+                if (class_exists($paramType)) {
+                    /**********************************************************************
+                     * If there's an `IBindResolver` instance bound to this `$paramType`  *
+                     * we call the `IBindResolver::resolve()` and add the return value to *
+                     * `$resolvedParams`.                                                 *
+                     **********************************************************************/
+                    if (isset($binds[$paramType])) {
+                        $resolvedParams[$key] = $binds[$paramType]->resolve();
 
-                    continue;
-                }
+                    //////////////////////////////////////////////////////////////////////////
+                    // We already have its parameter resolved, there's nothing more to do. //
+                    //////////////////////////////////////////////////////////////////////////
+                        continue;
+                    }
 
-                if ($this->container->canAutowiring() && class_exists($paramType)) {
-                    $resolvedParams[$key] = $this->innerMake($paramType);
+                    if ($this->autoResolve) {
+                        $resolvedParams[$key] = $this->innerMake($paramType);
+                    }
                 }
             }
         }
 
         return $resolvedParams;
-    }
-
-    /**
-     * Inject dependencies into properties based on their DocBlock.
-     *
-     * @param ReflectionClass $redClass
-     * @param object          $instance
-     */
-    protected function injectPropertyDependencies($redClass, $instance)
-    {
-        $dcInstance = DocBlockFactory::createInstance();
-
-        ////////////////////////////
-        // Reading all properties //
-        ////////////////////////////
-        foreach ($redClass->getProperties() as $property) {
-            $dc = $dcInstance->create($property);
-
-            ////////////////////////////////
-            // Has tag @inject and @var?? //
-            ////////////////////////////////
-            if ($dc->hasTag('inject') && $dc->hasTag('var')) {
-                $varTags = $dc->getTagsByName('var');
-
-                ///////////////////////////////////////////////////////////////////////////
-                // DocBlock returns a collection of tags, its the last one that matters. //
-                ///////////////////////////////////////////////////////////////////////////
-                $tag = end($varTags);
-
-                /*************************************************************************
-                 * Tag value is the text next to the tag, e.g.: "@var \Unity\Support\Str"*
-                 * where "Unity\Support\Str" is the value.                               *
-                 ************************************************************************/
-                $class = $this->getTagValue($tag);
-
-                $classInstance = $this->innerMake($class);
-
-                /****************************************************************************
-                 * Make the instance accessible in case of a protected or private property. *
-                 * Thats why this type of injection isn't recommend, because its breaks     *
-                 * encapsulation.                                                           *
-                 ****************************************************************************/
-                $this->reflector->makeAccessibleIfNot($property);
-
-                ////////////////////////////////////////////////
-                // Here we inject the value. And... Thats it. //
-                ////////////////////////////////////////////////
-                $property->setValue($instance, $classInstance);
-            }
-        }
-    }
-
-    /**
-     * Gets a DockBlock tag value.
-     *
-     * @param Tag $tag
-     *
-     * @return string
-     */
-    protected function getTagValue(Tag $tag)
-    {
-        $exp = explode(' ', $tag->render());
-
-        if (count($exp) != 2) {
-            return false;
-        }
-
-        $value = end($exp);
-
-        if (empty($value)) {
-            return false;
-        }
-
-        return $value;
     }
 
     /**
@@ -225,9 +148,11 @@ class DependencyFactory implements IDependencyFactory
             throw new ClassNotFoundException("Class '{$class}' not found.");
         }
 
-        $df = new self($this->reflector);
-
-        $df->setContainer($this->container);
+        $df = new self(
+            $this->autoResolve,
+            $this->useAnnotations,
+            $this->reflector
+        );
 
         $instance = $df->make($class);
 
