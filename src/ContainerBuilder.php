@@ -3,7 +3,6 @@
 namespace Unity\Component\Container;
 
 use Unity\Reflector\Reflector;
-use Unity\Component\Container\Container;
 use Unity\Component\Container\Dependency\DependencyFactory;
 use Unity\Component\Container\Factories\BindResolverFactory;
 use Unity\Component\Container\Factories\DependencyResolverFactory;
