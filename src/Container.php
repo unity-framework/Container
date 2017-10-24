@@ -35,9 +35,9 @@ class Container implements IContainer
     /**
      * Container constructor.
      *
-     * @param IDependencyFactory $dependencyFactory
+     * @param IDependencyFactory         $dependencyFactory
      * @param IDependencyResolverFactory $dependencyResolverFactory
-     * @param IBindResolverFactory $bindResolverFactory
+     * @param IBindResolverFactory       $bindResolverFactory
      */
     public function __construct(
         IDependencyFactory $dependencyFactory,

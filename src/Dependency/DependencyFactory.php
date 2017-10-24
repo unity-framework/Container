@@ -3,10 +3,10 @@
 namespace Unity\Component\Container\Dependency;
 
 use ReflectionClass;
-use Unity\Reflector\Reflector;
 use Unity\Component\Container\Exceptions\ClassNotFoundException;
 use Unity\Component\Container\Exceptions\NonInstantiableClassException;
 use Unity\Contracts\Container\Dependency\IDependencyFactory;
+use Unity\Reflector\Reflector;
 
 /**
  * Class DependencyBuilder.
@@ -21,7 +21,7 @@ class DependencyFactory implements IDependencyFactory
     protected $autoResolve = true;
     /** @var bool */
     protected $useAnnotations = false;
-    
+
     /** @var Reflector */
     protected $reflector;
 
@@ -40,13 +40,13 @@ class DependencyFactory implements IDependencyFactory
     /**
      * Makes a `$class` instance.
      *
-     * @param string $class Class name.
-     * @param array $arguments Constructor arguments.
-     * @param array $binds
-     *
-     * @return mixed|object
+     * @param string $class     Class name.
+     * @param array  $arguments Constructor arguments.
+     * @param array  $binds
      *
      * @throws NonInstantiableClassException
+     *
+     * @return mixed|object
      */
     public function make($class, $arguments = [], $binds = [])
     {
@@ -69,8 +69,8 @@ class DependencyFactory implements IDependencyFactory
 
     /**
      * @param ReflectionClass $refClass
-     * @param array $arguments
-     * @param array $binds
+     * @param array           $arguments
+     * @param array           $binds
      *
      * @return array
      */
@@ -111,9 +111,9 @@ class DependencyFactory implements IDependencyFactory
                 if (isset($binds[$paramType]) && interface_exists($paramType)) {
                     $resolvedParams[$key] = $binds[$paramType]->resolve();
 
-                //////////////////////////////////////////////////////////////////////////
-                // We already have its parameter resolved, there's nothing more to do. //
-                //////////////////////////////////////////////////////////////////////////
+                    //////////////////////////////////////////////////////////////////////////
+                    // We already have its parameter resolved, there's nothing more to do. //
+                    //////////////////////////////////////////////////////////////////////////
                     continue;
                 }
 

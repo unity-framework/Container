@@ -1,12 +1,12 @@
 <?php
 
+use e200\MakeAccessible\Make;
 use Helpers\Bar;
 use Helpers\IFoo;
 use Helpers\Mocks\TestBase;
-use e200\MakeAccessible\Make;
-use Unity\Contracts\Container\IContainer;
 use Unity\Component\Container\Dependency\DependencyResolver;
 use Unity\Contracts\Container\Dependency\IDependencyResolver;
+use Unity\Contracts\Container\IContainer;
 
 /**
  * @author Eleandro Duzentos <eleandro@inbox.ru>
@@ -48,11 +48,12 @@ class DependencyResolverTest extends TestBase
     public function testBind()
     {
         $dependencyResolver = $this->getAccessibleResolver();
-        
-        $instance = $dependencyResolver->bind(Bar::class, function () {});
+
+        $instance = $dependencyResolver->bind(Bar::class, function () {
+        });
 
         $this->assertInstanceOf(IDependencyResolver::class, $instance);
-        
+
         $this->assertArrayHasKey(Bar::class, $dependencyResolver->binds);
         $this->assertTrue($dependencyResolver->binds[Bar::class]);
     }
@@ -60,7 +61,7 @@ class DependencyResolverTest extends TestBase
     public function testGetBinds()
     {
         $dependencyResolver = $this->getAccessibleResolver();
-        
+
         $dependencyResolver->binds = true;
 
         $this->assertTrue($dependencyResolver->getBinds());
@@ -140,7 +141,7 @@ class DependencyResolverTest extends TestBase
         $dependencyResolver->entry = $expected;
 
         $value = $dependencyResolver->make();
-        
+
         $this->assertEquals($expected, $value);
     }
 

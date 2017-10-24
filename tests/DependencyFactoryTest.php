@@ -1,19 +1,18 @@
 <?php
 
-use Helpers\Foo;
+use e200\MakeAccessible\Make;
 use Helpers\Bar;
-use Helpers\IFoo;
+use Helpers\Foo;
 use Helpers\Foobar;
-use Helpers\Bounded;
+use Helpers\IFoo;
 use Helpers\Mocks\TestBase;
 use Helpers\WithConstructor;
-use e200\MakeAccessible\Make;
-use Unity\Reflector\Reflector;
 use Helpers\WithConstructorParameters;
-use Unity\Contracts\Container\Bind\IBindResolver;
 use Unity\Component\Container\Dependency\DependencyFactory;
 use Unity\Component\Container\Exceptions\ClassNotFoundException;
 use Unity\Component\Container\Exceptions\NonInstantiableClassException;
+use Unity\Contracts\Container\Bind\IBindResolver;
+use Unity\Reflector\Reflector;
 
 /**
  * @author Eleandro Duzentos <eleandro@inbox.ru>
@@ -76,11 +75,11 @@ class DependencyFactoryTest extends TestBase
 
         $this->assertEmpty($constructorArgs);
     }
-    
+
     public function testGetConstructorArgsWithBinds()
     {
         $bindResolverMock = $this->createMock(IBindResolver::class);
-        
+
         $bindResolverMock
             ->expects($this->once())
             ->method('resolve')
@@ -89,7 +88,7 @@ class DependencyFactoryTest extends TestBase
         ////////////////////////////////////////////////////////////////
         // Since make is public, we don't need to make it accessible. //
         ////////////////////////////////////////////////////////////////
-        
+
         $df = $this->getAccessibleDependencyFactory();
 
         $refClass = new ReflectionClass(Foobar::class);
