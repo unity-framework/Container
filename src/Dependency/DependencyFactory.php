@@ -91,7 +91,7 @@ class DependencyFactory implements IDependencyFactory
              * If there's an explicit value for `$param` on `$arguments` we add it to *
              * `$resolvedParams`.                                                     *
              **************************************************************************/
-            if (isset($arguments[$key])) {
+            if (array_key_exists($key, $arguments)) {
                 $resolvedParams[$key] = $arguments[$key];
 
                 /////////////////////////////////////////////////////////////////////////
