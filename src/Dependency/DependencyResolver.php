@@ -2,9 +2,9 @@
 
 namespace Unity\Component\Container\Dependency;
 
-use Psr\Container\ContainerExceptionInterface;
 use Unity\Contracts\Container\Dependency\IDependencyFactory;
 use Unity\Contracts\Container\Dependency\IDependencyResolver;
+use Unity\Contracts\Container\Factories\IBindResolverFactory;
 use Unity\Contracts\Container\IContainer;
 
 /**
@@ -18,24 +18,28 @@ class DependencyResolver implements IDependencyResolver
 {
     protected $entry;
     protected $singleton;
+    protected $binds = [];
     protected $arguments = [];
     protected $protectEntry = false;
 
     protected $dependencyFactory;
+    protected $bindResolverFactory;
     protected $container;
 
     public function __construct(
                           $entry,
         IDependencyFactory $dependencyFactory,
+        IBindResolverFactory $bindResolverFactory,
         IContainer        $container
         ) {
         $this->entry = $entry;
         $this->dependencyFactory = $dependencyFactory;
+        $this->bindResolverFactory = $bindResolverFactory;
         $this->container = $container;
     }
 
     /**
-     * Resolves the resolver dependency.
+     * Resolves the dependency.
      *
      * @return mixed
      */
@@ -59,6 +63,7 @@ class DependencyResolver implements IDependencyResolver
     public function make($arguments = [])
     {
         $entry = $this->getEntry();
+        $binds = $this->getBinds();
 
         if (!$this->protectEntry) {
             /****************************************************
@@ -77,7 +82,7 @@ class DependencyResolver implements IDependencyResolver
             // If our entry is a string and is an existing class, let's make it. :) //
             //////////////////////////////////////////////////////////////////////////
             if (is_string($entry) && class_exists($entry)) {
-                return $this->dependencyFactory->make($entry, $arguments);
+                return $this->dependencyFactory->make($entry, $arguments, $binds);
             }
 
             /////////////////////////////////////////////////////////////////////
@@ -98,7 +103,7 @@ class DependencyResolver implements IDependencyResolver
 
     /**
      * Prevents the entry from being resolved
-     * causing its imediactly return.
+     * causing its immediately return.
      *
      * @param bool $enabled
      *
@@ -134,6 +139,38 @@ class DependencyResolver implements IDependencyResolver
     {
         return $this->arguments;
     }
+    
+    /**
+     * @param string $class
+     * @param mixed  $callback
+     *
+     * Binds a callback return value to a class.
+     *
+     * Every time a class needs an argument of type `$class`,
+     * the `$callback` will be invoked, and the return value will be injected.
+     *
+     * Different of the register method, this will not throw an exception
+     * if you register a bind with the same key twice, instead, it will
+     * replace the old bind with this new one.
+     *
+     * @return static
+     */
+    public function bind($class, $callback)
+    {
+        $this->binds[$class] = $this->bindResolverFactory->make($callback, $this->container);
+
+        return $this;
+    }
+
+    /**
+     * Gets all registered binds.
+     *
+     * @return array
+     */
+    protected function getBinds()
+    {
+        return $this->binds;
+    }
 
     /**
      * Gets the resolver entry.
@@ -148,8 +185,6 @@ class DependencyResolver implements IDependencyResolver
     /**
      * Resolves and returns a dependency on the first call.
      * Only returns the resolved dependency on subsequent calls.
-     *
-     * @throws ContainerExceptionInterface
      *
      * @return mixed
      */
