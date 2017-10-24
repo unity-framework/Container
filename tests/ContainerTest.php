@@ -163,10 +163,8 @@ class ContainerTest extends TestBase
         $container->setServiceProvider(new class() implements IServiceProvider {
             public function register(IContainer $container)
             {
-                return [
-                    'id1' => null,
-                    'id2' => null,
-                ];
+                $container->set('id1', null);
+                $container->set('id2', null);
             }
         });
 
@@ -187,13 +185,15 @@ class ContainerTest extends TestBase
             new class() implements IServiceProvider {
                 public function register(IContainer $container)
                 {
-                    return ['id1' => null, 'id2' => null];
+                    $container->set('id1', null);
+                    $container->set('id2', null);
                 }
             },
             new class() implements IServiceProvider {
                 public function register(IContainer $container)
                 {
-                    return ['id3' => null, 'id4' => null];
+                    $container->set('id3', null);
+                    $container->set('id4', null);
                 }
             },
         ]);
@@ -203,6 +203,8 @@ class ContainerTest extends TestBase
         ////////////////////////////////////////////
         $this->assertTrue($container->has('id1'));
         $this->assertTrue($container->has('id2'));
+        $this->assertTrue($container->has('id3'));
+        $this->assertTrue($container->has('id4'));
 
         $this->assertCount(4, $container);
     }
