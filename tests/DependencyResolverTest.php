@@ -1,6 +1,7 @@
 <?php
 
 use Helpers\Bar;
+use Helpers\IFoo;
 use Helpers\Mocks\TestBase;
 use e200\MakeAccessible\Make;
 use Unity\Contracts\Container\IContainer;
@@ -126,6 +127,21 @@ class DependencyResolverTest extends TestBase
 
         $this->assertInstanceOf(Bar::class, $instance1);
         $this->assertNotSame($instance1, $instance2);
+    }
+
+    public function testMakeWithInterface()
+    {
+        $dependencyFactory = $this->mockDependencyFactory();
+
+        $dependencyResolver = $this->getAccessibleResolver(null, $dependencyFactory);
+
+        $expected = IFoo::class;
+
+        $dependencyResolver->entry = $expected;
+
+        $value = $dependencyResolver->make();
+        
+        $this->assertEquals($expected, $value);
     }
 
     public function testMakeWithCallback()
