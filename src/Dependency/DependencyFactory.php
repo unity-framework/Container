@@ -86,13 +86,17 @@ class DependencyFactory implements IDependencyFactory
         /////////////////////////////////
         $params = $this->reflector->getConstructorParameters($refClass);
 
-        foreach ($params as $key => $param) {
+        $count = count($params);
+
+        for ($i = 0; $i < $count; $i++) {
+            $param = $params[$i];
+            
             /**************************************************************************
              * If there's an explicit value for `$param` on `$arguments` we add it to *
              * `$resolvedParams`.                                                     *
              **************************************************************************/
-            if (isset($arguments[$key])) {
-                $resolvedParams[$key] = $arguments[$key];
+            if (isset($arguments[$i])) {
+                $resolvedParams[$i] = $arguments[$i];
 
                 /////////////////////////////////////////////////////////////////////////
                 // We already have its parameter resolved, there's nothing more to do. //
@@ -109,7 +113,7 @@ class DependencyFactory implements IDependencyFactory
                  * `$resolvedParams`.                                                 *
                  **********************************************************************/
                 if (isset($binds[$paramType]) && interface_exists($paramType)) {
-                    $resolvedParams[$key] = $binds[$paramType]->resolve();
+                    $resolvedParams[$i] = $binds[$paramType]->resolve();
 
                 //////////////////////////////////////////////////////////////////////////
                 // We already have its parameter resolved, there's nothing more to do. //
@@ -118,7 +122,7 @@ class DependencyFactory implements IDependencyFactory
                 }
 
                 if ($this->autoResolve && class_exists($paramType)) {
-                    $resolvedParams[$key] = $this->innerMake($paramType);
+                    $resolvedParams[$i] = $this->innerMake($paramType);
                 }
             }
         }
