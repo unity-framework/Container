@@ -161,11 +161,11 @@ class ContainerTest extends TestBase
         $container = $this->getContainer();
 
         $container->setServiceProvider(new class() implements IServiceProvider {
-            public function register(IContainer $container) : array
+            public function register(IContainer $container)
             {
                 return [
-                    ['id1' => null],
-                    ['id2' => null],
+                    'id1' => null,
+                    'id2' => null,
                 ];
             }
         });
@@ -185,21 +185,15 @@ class ContainerTest extends TestBase
 
         $container->setServiceProviders([
             new class() implements IServiceProvider {
-                public function register(IContainer $container) : array
+                public function register(IContainer $container)
                 {
-                    return [
-                        ['id1' => null],
-                        ['id2' => null],
-                    ];
+                    return ['id1' => null, 'id2' => null];
                 }
             },
             new class() implements IServiceProvider {
-                public function register(IContainer $container) : array
+                public function register(IContainer $container)
                 {
-                    return [
-                        ['id3' => null],
-                        ['id4' => null],
-                    ];
+                    return ['id3' => null, 'id4' => null];
                 }
             },
         ]);
