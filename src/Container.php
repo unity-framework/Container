@@ -22,21 +22,23 @@ use Unity\Contracts\Container\IServiceProvider;
  */
 class Container implements IContainer
 {
-    protected $binds = [];
+    /** @var IDependencyResolver[] */
     protected $resolvers = [];
-    protected $canAutowiring = true;
-    protected $canUseAnnotations = true;
 
+    /** @var IDependencyFactory */
     protected $dependencyFactory;
+
+    /** @var IDependencyResolverFactory */
     protected $dependencyResolverFactory;
+    /** @var IBindDependencyResolver */
     protected $bindResolverFactory;
 
     /**
      * Container constructor.
      *
-     * @param IDependencyFactory         $dependencyFactory
+     * @param IDependencyFactory $dependencyFactory
      * @param IDependencyResolverFactory $dependencyResolverFactory
-     * @param IBindResolverFactory       $bindResolverFactory
+     * @param IBindResolverFactory $bindResolverFactory
      */
     public function __construct(
         IDependencyFactory $dependencyFactory,
@@ -46,11 +48,6 @@ class Container implements IContainer
         $this->dependencyFactory = $dependencyFactory;
         $this->dependencyResolverFactory = $dependencyResolverFactory;
         $this->bindResolverFactory = $bindResolverFactory;
-
-        ////////////////////////////////////////////////
-        // `DependencyFactory` needs `$this` instance //
-        ////////////////////////////////////////////////
-        $dependencyFactory->setContainer($this);
     }
 
     /**
@@ -69,10 +66,10 @@ class Container implements IContainer
             throw new DuplicateIdException("The container already has a dependency resolver for id \"{$id}\".");
         }
 
-        return $this->resolvers[$id] = $this
-            ->dependencyResolverFactory->make(
+        return $this->resolvers[$id] = $this->dependencyResolverFactory->make(
                 $entry,
                 $this->dependencyFactory,
+                $this->bindResolverFactory,
                 $this
             );
     }
@@ -112,6 +109,7 @@ class Container implements IContainer
         $resolver = $this->dependencyResolverFactory->make(
             $entry,
             $this->dependencyFactory,
+            $this->bindResolverFactory,
             $this
         );
 
@@ -125,7 +123,6 @@ class Container implements IContainer
      * @param string $id Dependency resolver identifier.
      *
      * @throws NotFoundExceptionInterface
-     * @throws ContainerExceptionInterface
      *
      * @return mixed
      */
@@ -153,8 +150,8 @@ class Container implements IContainer
     /**
      * Resolves and returns the registered dependency on every call.
      *
-     * @param string     $id     Dependency resolver identifier.
-     * @param array|null $params
+     * @param string $id     Dependency resolver identifier.
+     * @param array  $params
      *
      * @throws NotFoundException
      *
@@ -167,54 +164,6 @@ class Container implements IContainer
         }
 
         throw new NotFoundException("No dependency resolver was founded for id \"{$id}\" on the container.");
-    }
-
-    /**
-     * @param string $class
-     * @param mixed  $callback
-     *
-     * Binds a concrete class to an interface.
-     *
-     * Every time a class needs an argument of type `$class`,
-     * the `$callback` will be invoked, and the return value will be injected.
-     *
-     * Different of the register method, this will not throw an exception
-     * if you register an bind with the same key twice, instead, it will
-     * replace the old bind by this new one.
-     *
-     * @return static
-     */
-    public function bind(string $class, $callback)
-    {
-        $this->binds[$class] = $this->bindResolverFactory->make($callback, $this);
-
-        return $this;
-    }
-
-    /**
-     * @param $class
-     *
-     * @return bool
-     */
-    public function isBound(string $class)
-    {
-        return isset($this->binds[$class]);
-    }
-
-    /**
-     * @param string $class
-     *
-     * @throws NotFoundException
-     *
-     * @return mixed
-     */
-    public function getBoundValue(string $class)
-    {
-        if ($this->isBound($class)) {
-            return $this->binds[$class]->resolve();
-        }
-
-        throw new NotFoundException("No resolver was bound to class \"{$class}\" on the container.");
     }
 
     /**
@@ -239,59 +188,6 @@ class Container implements IContainer
         foreach ($serviceProviders as $serviceProvider) {
             $this->setServiceProvider($serviceProvider);
         }
-    }
-
-    /**
-     * Enable|Disable autowiring.
-     *
-     * Tells the container if it should auto wiring.
-     *
-     * @param bool $enable
-     *
-     * @return $this
-     */
-    public function enableAutowiring($enable)
-    {
-        $this->canAutowiring = $enable;
-
-        return $this;
-    }
-
-    /**
-     * Checks if injection is enabled.
-     *
-     * @return bool
-     */
-    public function canAutowiring()
-    {
-        return $this->canAutowiring;
-    }
-
-    /**
-     * Enable|Disable the use of annotations.
-     *
-     * Tells the container if it can inspect annotations
-     * searching for properties or constructor dependencies.
-     *
-     * @param bool $enable
-     *
-     * @return $this
-     */
-    public function enableUseAnnotation($enable)
-    {
-        $this->canUseAnnotations = $enable;
-
-        return $this;
-    }
-
-    /**
-     * Checks if the use of annotations is enabled.
-     *
-     * @return bool
-     */
-    public function canUseAnnotations()
-    {
-        return $this->canUseAnnotations;
     }
 
     public function __get($id)
