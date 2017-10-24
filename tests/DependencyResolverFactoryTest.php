@@ -13,12 +13,14 @@ class DependencyResolverFactoryTest extends TestBase
     {
         $container = $this->mockContainer();
         $dependencyFactory = $this->mockDependencyFactory();
+        $bindResolverFactory = $this->mockBindResolverFactory();
 
         $this->assertInstanceOf(
             IDependencyResolver::class,
             (new DependencyResolverFactory())->make(
                 null,
                 $dependencyFactory,
+                $bindResolverFactory,
                 $container
             )
         );

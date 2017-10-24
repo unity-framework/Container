@@ -37,6 +37,7 @@ class ContainerTest extends TestBase
         $dependencyResolver = $container->set('id', null);
 
         $this->assertInstanceOf(IDependencyResolver::class, $dependencyResolver);
+        $this->assertArrayHasKey('id', $accessibleContainer->resolvers);
         $this->assertEquals($dependencyResolver, $accessibleContainer->resolvers['id']);
     }
 
@@ -94,55 +95,6 @@ class ContainerTest extends TestBase
         $this->assertTrue($container->get('id'));
     }
 
-    public function testBind()
-    {
-        $container = $this->getContainer();
-
-        $returnedInstance = $container->bind('id', function () {
-        });
-
-        $this->assertInstanceOf(Container::class, $returnedInstance);
-
-        $accessibleContainer = Make::accessible($container);
-
-        $this->assertArrayHasKey('id', $accessibleContainer->binds);
-    }
-
-    public function testIsBound()
-    {
-        $container = $this->getContainer();
-
-        $this->assertFalse($container->isBound('id'));
-
-        $container->bind('id', function () {
-        });
-
-        $this->assertTrue($container->isBound('id'));
-    }
-
-    public function testGetBoundValue()
-    {
-        $container = $this->getContainer();
-
-        $container->bind('id', function () {
-        });
-
-        $this->assertTrue($container->getBoundValue('id'));
-    }
-
-    /**
-     * @covers Container::getBoundValue()
-     */
-    public function testNotFoundExceptionOnGetBind()
-    {
-        $this->expectException(NotFoundException::class);
-
-        $container = $this->getContainer();
-
-        $this->assertFalse($container->isBound(''));
-        $container->getBoundValue('');
-    }
-
     /**
      * @covers Container::Get()
      */
@@ -184,9 +136,9 @@ class ContainerTest extends TestBase
          */
         $container->set('id', null);
 
-        ////////////////////
-        // Samething here //
-        ////////////////////
+        /////////////////////
+        // Same thing here //
+        /////////////////////
         $instance = $container->make('id', []);
 
         $this->assertTrue($instance);
@@ -259,34 +211,6 @@ class ContainerTest extends TestBase
         $this->assertTrue($container->has('id2'));
 
         $this->assertCount(4, $container);
-    }
-
-    public function testEnableAutowiring()
-    {
-        $container = $this->getContainer();
-        $accessibleContainer = Make::accessible($container);
-
-        $container->enableAutowiring(false);
-        $this->assertFalse($accessibleContainer->canAutowiring);
-
-        $container->enableAutowiring(true);
-        $this->assertTrue($accessibleContainer->canAutowiring);
-    }
-
-    public function testCanAutowiring()
-    {
-        $container = $this->getContainer();
-        $accessibleContainer = Make::accessible($container);
-
-        // True by default.
-        $this->assertTrue($container->canAutowiring());
-
-        $accessibleContainer->canAutowiring = false;
-        $this->assertFalse($container->canAutowiring());
-
-        $container->enableAutowiring(true);
-        $accessibleContainer->canAutowiring = true;
-        $this->assertTrue($container->canAutowiring());
     }
 
     /**

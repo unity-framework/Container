@@ -1,10 +1,11 @@
 <?php
 
-use e200\MakeAccessible\Make;
 use Helpers\Bar;
 use Helpers\Mocks\TestBase;
-use Unity\Component\Container\Dependency\DependencyResolver;
+use e200\MakeAccessible\Make;
 use Unity\Contracts\Container\IContainer;
+use Unity\Component\Container\Dependency\DependencyResolver;
+use Unity\Contracts\Container\Dependency\IDependencyResolver;
 
 /**
  * @author Eleandro Duzentos <eleandro@inbox.ru>
@@ -41,6 +42,27 @@ class DependencyResolverTest extends TestBase
         $dependencyResolver->arguments = $arguments;
 
         $this->assertSame($arguments, $dependencyResolver->getArguments());
+    }
+
+    public function testBind()
+    {
+        $dependencyResolver = $this->getAccessibleResolver();
+        
+        $instance = $dependencyResolver->bind(Bar::class, function () {});
+
+        $this->assertInstanceOf(IDependencyResolver::class, $instance);
+        
+        $this->assertArrayHasKey(Bar::class, $dependencyResolver->binds);
+        $this->assertTrue($dependencyResolver->binds[Bar::class]);
+    }
+
+    public function testGetBinds()
+    {
+        $dependencyResolver = $this->getAccessibleResolver();
+        
+        $dependencyResolver->binds = true;
+
+        $this->assertTrue($dependencyResolver->getBinds());
     }
 
     public function testSetSingleton()
@@ -158,11 +180,6 @@ class DependencyResolverTest extends TestBase
     {
         $containerMock = $this->createMock(IContainer::class);
 
-        $containerMock
-            ->expects($this->any())
-            ->method('canAutowiring')
-            ->willReturn(true);
-
         return $containerMock;
     }
 
@@ -195,9 +212,12 @@ class DependencyResolverTest extends TestBase
          */
         $dependencyFactory = $dependencyFactory ?? $this->mockDependencyFactory();
 
+        $bindResolverFactory = $this->mockBindResolverFactory();
+
         return new DependencyResolver(
             $entry,
             $dependencyFactory,
+            $bindResolverFactory,
             $containerMock
         );
     }

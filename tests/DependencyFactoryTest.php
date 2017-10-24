@@ -1,71 +1,24 @@
 <?php
 
-use e200\MakeAccessible\Make;
-use Helpers\Bar;
-use Helpers\Bounded;
 use Helpers\Foo;
+use Helpers\Bar;
 use Helpers\IFoo;
+use Helpers\Bounded;
 use Helpers\Mocks\TestBase;
 use Helpers\WithConstructor;
-use Helpers\WithConstructorParameters;
-use Helpers\WithProperties;
-use phpDocumentor\Reflection\DocBlock\Tag;
-use Unity\Component\Container\Dependency\DependencyFactory;
-use Unity\Component\Container\Exceptions\NonInstantiableClassException;
+use e200\MakeAccessible\Make;
 use Unity\Reflector\Reflector;
+use Helpers\WithConstructorParameters;
+use Unity\Contracts\Container\Bind\IBindResolver;
+use Unity\Component\Container\Dependency\DependencyFactory;
+use Unity\Component\Container\Exceptions\ClassNotFoundException;
+use Unity\Component\Container\Exceptions\NonInstantiableClassException;
 
 /**
  * @author Eleandro Duzentos <eleandro@inbox.ru>
  */
 class DependencyFactoryTest extends TestBase
 {
-    public function testSetContainer()
-    {
-        $container = $this->mockContainer();
-
-        $df = $this->getDependencyFactory();
-
-        $adf = Make::accessible($df);
-
-        $df->setContainer($container);
-
-        $this->assertSame($container, $adf->container);
-    }
-
-    public function testGetTagValue()
-    {
-        $df = $this->getAccessibleDependencyFactory();
-
-        $tagMock = $this->createMock(Tag::class);
-
-        $tagMock
-            ->expects($this->once())
-            ->method('render')
-            ->willReturn('@var \Unity\Reflector');
-
-        $this->assertEquals('\Unity\Reflector', $df->getTagValue($tagMock));
-    }
-
-    /**
-     * @covers DependencyFactory::getTagValue()
-     */
-    public function testGetTagValueWithNoValue()
-    {
-        $df = $this->getAccessibleDependencyFactory();
-
-        $tagMock = $this->createMock(Tag::class);
-
-        $tagMock
-            ->expects($this->exactly(4))
-            ->method('render')
-            ->will($this->onConsecutiveCalls('@var', '', 'var', 'var '));
-
-        $this->assertFalse($df->getTagValue($tagMock));
-        $this->assertFalse($df->getTagValue($tagMock));
-        $this->assertFalse($df->getTagValue($tagMock));
-        $this->assertFalse($df->getTagValue($tagMock));
-    }
-
     /**
      * Performs a test giving required constructor parameters directly.
      *
@@ -79,154 +32,104 @@ class DependencyFactoryTest extends TestBase
 
         $args = [1, 2];
 
-        $constructorArgs = $df->getConstructorArgs($args, $refClass);
+        $constructorArgs = $df->getConstructorArgs($refClass, $args, []);
 
         $this->assertInternalType('array', $constructorArgs);
         $this->assertEquals($args, $constructorArgs);
     }
 
     /**
-     * Performs a test with a class that has its constructor parameters bounded
-     * in the Container.
+     * Performs a test with a class that needs their dependencies to be auto resolved.
      *
      * @covers DependencyFactory::giveConstructorArgs()
      */
-    public function testGetConstructorArgsWithBoundArgs()
+    public function testGetConstructorArgsWithAutoResolver()
     {
-        $containerMock = $this->mockContainer();
-
-        /*************************************************************************
-         * We need to tell to `DependencyFactory` that `Bound` class constructor *
-         * param is bound and then give to it the bounded value.                 *
-         *************************************************************************/
-        $containerMock
-            ->expects($this->once())
-            ->method('isBound')
-            ->willReturn(true);
-
-        $containerMock
-            ->expects($this->once())
-            ->method('getBoundValue')
-            ->willReturn(new Bar());
-
-        $df = $this->getAccessibleDependencyFactory($containerMock);
-
-        $refClass = new ReflectionClass(Bounded::class);
-
-        $constructorArgs = $df->getConstructorArgs([], $refClass);
-
-        $this->assertInstanceOf(Bar::class, $constructorArgs[0]);
-    }
-
-    /**
-     * Performs a test with a class that needs their dependencies to be autowired.
-     *
-     * Autowiring is the process of search for dependencies and try to resolve
-     * them automatically.
-     *
-     * @covers DependencyFactory::giveConstructorArgs()
-     */
-    public function testGetConstructorArgsWithAutowiring()
-    {
-        $containerMock = $this->mockContainer();
-
-        ///////////////////////////////////////////////////////////////////////////////
-        // We need to tell to `DependencyFactory` that `Container::canAutowiring()`. //
-        ///////////////////////////////////////////////////////////////////////////////
-        $containerMock
-            ->expects($this->once())
-            ->method('canAutowiring')
-            ->willReturn(true);
-
-        /////////////////////////////////////
-        // Our testing method is protected //
-        /////////////////////////////////////
-        $df = $this->getAccessibleDependencyFactory($containerMock);
+        $df = $this->getAccessibleDependencyFactory();
 
         $refClass = new ReflectionClass(Foo::class);
 
         /////////////////////////////////////////////////////////////////////////////////
         // Since we're testing autowiring, there's no need to give explicit arguments. //
         /////////////////////////////////////////////////////////////////////////////////
-        $constructorArgs = $df->getConstructorArgs([], $refClass);
+        $constructorArgs = $df->getConstructorArgs($refClass, [], []);
 
         $this->assertInstanceOf(Bar::class, $constructorArgs[0]);
     }
 
     /**
-     * Performs a test with a class that needs their property dependencies to be
-     * autowired using annotations (@inject).
+     * Performs a test with a class that needs their dependencies to be auto resolved.
      *
-     * @covers DependencyFactory::injectPropertyDependencies()
+     * @covers DependencyFactory::giveConstructorArgs()
      */
-    public function testInjectPropertyDependencies()
+    public function testGetConstructorArgsWithAutoResolverDisabled()
     {
-        $containerMock = $this->mockContainer();
+        $df = $this->getAccessibleDependencyFactory(false);
 
-        ////////////////////////////////////////////////////////////////////////////////
-        // We need to tell to DependencyFactory that `Container::canUseAnnotations()` //
-        ////////////////////////////////////////////////////////////////////////////////
-        $containerMock
-            ->expects($this->exactly(2))
-            ->method('canUseAnnotations')
-            ->willReturn(true);
+        $refClass = new ReflectionClass(Foo::class);
 
-        //////////////////////////////////////
-        // Getting our accessible instance. //
-        //////////////////////////////////////
-        $df = $this->getAccessibleDependencyFactory($containerMock);
+        /////////////////////////////////////////////////////////////////////////////////
+        // Since we're testing autowiring, there's no need to give explicit arguments. //
+        /////////////////////////////////////////////////////////////////////////////////
+        $constructorArgs = $df->getConstructorArgs($refClass, [], []);
 
-        /////////////////////////////////////////////////////////////////////
-        // This is the instance that need their properties to be injected. //
-        /////////////////////////////////////////////////////////////////////
-        $instance = new WithProperties();
-
-        $refClass = new ReflectionClass($instance);
-
-        //////////////////////////
-        // Our testing function //
-        //////////////////////////
-        $df->injectPropertyDependencies($refClass, $instance);
-
-        //////////////////////////////////////////////////////////////////////////////
-        // Since `WithProperties` properties are protected, we make them accessible. //
-        //////////////////////////////////////////////////////////////////////////////
-        $accessibleWithProperties = Make::accessible($instance);
-
-        $this->assertInstanceOf(Bar::class, $accessibleWithProperties->bar);
-        $this->assertInstanceOf(stdClass::class, $accessibleWithProperties->std);
-
-        /****************************************************************************
-         * When `DependencyFactory` calls `Container::get()`, we'll return true.    *
-         * Here, we're testing if `DependencyFactory::injectPropertyDependencies()` *
-         * can inject container entries.                                            *
-         ****************************************************************************/
-        /*$containerMock
-            ->expects($this->once())
-            ->method('get')
-            ->willReturn(true);
-
-        $this->assertTrue($accessibleWithProperties->boolean);*/
+        $this->assertEmpty($constructorArgs);
     }
-
-    public function testMake()
+    
+    public function testGetConstructorArgsWithBinds()
     {
-        $containerMock = $this->mockContainer();
-
-        ////////////////////////////////////////////////////////////////////////////////
-        // We need to tell to DependencyFactory that `Container::canUseAnnotations()` //
-        ////////////////////////////////////////////////////////////////////////////////
-        $containerMock
+        $bindResolverMock = $this->createMock(IBindResolver::class);
+        
+        $bindResolverMock
             ->expects($this->once())
-            ->method('canUseAnnotations')
+            ->method('resolve')
             ->willReturn(true);
 
         ////////////////////////////////////////////////////////////////
         // Since make is public, we don't need to make it accessible. //
         ////////////////////////////////////////////////////////////////
-        $df = $this->getDependencyFactory($containerMock);
+        
+        $df = $this->getAccessibleDependencyFactory();
+
+        $refClass = new ReflectionClass(Bounded::class);
+
+        /////////////////////////////////////////////////////////////////////////////////
+        // Since we're testing autowiring, there's no need to give explicit arguments. //
+        /////////////////////////////////////////////////////////////////////////////////
+        $constructorArgs = $df->getConstructorArgs($refClass, [], [Bar::class => $bindResolverMock]);
+
+        $this->assertTrue($constructorArgs[0]);
+    }
+
+    public function testMake()
+    {
+        ////////////////////////////////////////////////////////////////
+        // Since make is public, we don't need to make it accessible. //
+        ////////////////////////////////////////////////////////////////
+        $df = $this->getDependencyFactory(false);
 
         $this->assertInstanceOf(WithConstructor::class, $df->make(WithConstructor::class));
+    }
+
+    public function testInnerMake()
+    {
+        ////////////////////////////////////////////////////////////////
+        // Since make is public, we don't need to make it accessible. //
+        ////////////////////////////////////////////////////////////////
+        $df = $this->getAccessibleDependencyFactory();
+
+        $this->assertInstanceOf(WithConstructor::class, $df->innerMake(WithConstructor::class));
+    }
+
+    public function testClassNotFoundExceptionOnInnerMake()
+    {
+        $this->expectException(ClassNotFoundException::class);
+        ////////////////////////////////////////////////////////////////
+        // Since make is public, we don't need to make it accessible. //
+        ////////////////////////////////////////////////////////////////
+        $df = $this->getAccessibleDependencyFactory();
+
+        $df->innerMake(null);
     }
 
     /**
@@ -241,24 +144,13 @@ class DependencyFactoryTest extends TestBase
         $df->make(IFoo::class);
     }
 
-    public function getDependencyFactory($container = null)
+    public function getDependencyFactory($autoResolve = true, $canUseAnnotations = false)
     {
-        //////////////////////////////////////////////////////////
-        // Some test functions need to provide their own mocks. //
-        //////////////////////////////////////////////////////////
-        if (!$container) {
-            $container = $this->mockContainer();
-        }
-
-        $dependencyFactory = new DependencyFactory(new Reflector());
-
-        $dependencyFactory->setContainer($container);
-
-        return $dependencyFactory;
+        return new DependencyFactory($autoResolve, $canUseAnnotations, new Reflector());
     }
 
-    public function getAccessibleDependencyFactory($container = null)
+    public function getAccessibleDependencyFactory($autoResolve = true, $canUseAnnotations = false)
     {
-        return Make::accessible($this->getDependencyFactory($container));
+        return Make::accessible($this->getDependencyFactory($autoResolve, $canUseAnnotations));
     }
 }
