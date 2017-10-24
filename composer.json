@@ -13,7 +13,6 @@
     "minimum-stability": "dev",
     "prefer-stable" : true,
     "require": {
-        "phpdocumentor/reflection-docblock": "^4.1",
         "unity/contracts": "dev-master",
         "unity/reflector": "dev-master"
     },
