@@ -14,7 +14,7 @@
             <file>tests/DependencyFactoryTest.php</file>
             <file>tests/DependencyResolverTest.php</file>
             <file>tests/ContainerTest.php</file>
-            <file>tests/ContainerBuilderTest.php</file>
+            <file>tests/ContainerManagerTest.php</file>
         </testsuite>
     </testsuites>
 </phpunit>

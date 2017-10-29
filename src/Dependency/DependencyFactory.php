@@ -108,7 +108,7 @@ class DependencyFactory implements IDependencyFactory
                  * we call the `IBindResolver::resolve()` and add the return value to *
                  * `$resolvedParams`.                                                 *
                  **********************************************************************/
-                if (isset($binds[$paramType]) && interface_exists($paramType)) {
+                if (array_key_exists($paramType, $binds) && interface_exists($paramType)) {
                     $resolvedParams[$key] = $binds[$paramType]->resolve();
 
                     //////////////////////////////////////////////////////////////////////////

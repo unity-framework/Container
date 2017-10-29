@@ -143,7 +143,7 @@ class Container implements IContainer
      */
     public function has($id)
     {
-        return isset($this->resolvers[$id]);
+        return array_key_exists($id, $this->resolvers);
     }
 
     /**
