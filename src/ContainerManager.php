@@ -8,13 +8,13 @@ use Unity\Component\Container\Factories\DependencyResolverFactory;
 use Unity\Reflector\Reflector;
 
 /**
- * Class ContainerBuilder.
+ * Class ContainerManager.
  *
- * Container builder.
+ * Container manager.
  *
  * @author Eleandro Duzentos <eleandro@inbox.ru>
  */
-class ContainerBuilder
+class ContainerManager
 {
     protected $autoResolve = true;
     protected $useAnnotations = false;
@@ -47,16 +47,50 @@ class ContainerBuilder
         return $this;
     }
 
-    public function build()
+    /**
+     * Returns an `IDependencyFactory` instance.
+     * 
+     * @return IDependencyFactory.
+     */
+    protected function getDependencyFactory()
     {
-        $dependencyFactory = new DependencyFactory(
+        return new DependencyFactory(
             $this->autoResolve,
             $this->useAnnotations,
             new Reflector()
         );
+    }
 
-        $dependencyResolverFactory = new DependencyResolverFactory();
-        $bindResolverFactory = new BindResolverFactory();
+    /**
+     * Returns an `IDependencyResolverFactory` instance.
+     * 
+     * @return IDependencyResolverFactory.
+     */
+    protected function getDependencyResolverFactory()
+    {
+        return new DependencyResolverFactory();
+    }
+
+    /**
+     * Returns an `IBindResolverFactory` instance.
+     * 
+     * @return IBindResolverFactory.
+     */
+    protected function getBindResolverFactory()
+    {
+        return new BindResolverFactory();
+    }
+
+    /**
+     * Builds an `IContainer` instance. 
+     * 
+     * @return IContainer
+     */
+    public function build()
+    {
+        $dependencyFactory         = $this->getDependencyFactory();
+        $dependencyResolverFactory = $this->getDependencyResolverFactory();
+        $bindResolverFactory       = $this->getBindResolverFactory();
 
         $container = new Container(
             $dependencyFactory,
