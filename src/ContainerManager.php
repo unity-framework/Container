@@ -6,6 +6,7 @@ use Unity\Component\Container\Dependency\DependencyFactory;
 use Unity\Component\Container\Factories\BindResolverFactory;
 use Unity\Component\Container\Factories\DependencyResolverFactory;
 use Unity\Reflector\Reflector;
+use Unity\Contracts\Container\IContainer;
 
 /**
  * Class ContainerManager.
