@@ -2,11 +2,12 @@
 
 namespace Unity\Component\Container;
 
+use Unity\Reflector\Reflector;
+use Unity\Contracts\Container\IContainer;
+use Unity\Contracts\Container\IContainerManager;
 use Unity\Component\Container\Dependency\DependencyFactory;
 use Unity\Component\Container\Factories\BindResolverFactory;
 use Unity\Component\Container\Factories\DependencyResolverFactory;
-use Unity\Reflector\Reflector;
-use Unity\Contracts\Container\IContainer;
 
 /**
  * Class ContainerManager.
@@ -15,7 +16,7 @@ use Unity\Contracts\Container\IContainer;
  *
  * @author Eleandro Duzentos <eleandro@inbox.ru>
  */
-class ContainerManager
+class ContainerManager implements IContainerManager
 {
     protected $autoResolve = true;
     protected $useAnnotations = false;
