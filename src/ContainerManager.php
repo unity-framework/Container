@@ -2,12 +2,12 @@
 
 namespace Unity\Component\Container;
 
-use Unity\Reflector\Reflector;
-use Unity\Contracts\Container\IContainer;
-use Unity\Contracts\Container\IContainerManager;
 use Unity\Component\Container\Dependency\DependencyFactory;
 use Unity\Component\Container\Factories\BindResolverFactory;
 use Unity\Component\Container\Factories\DependencyResolverFactory;
+use Unity\Contracts\Container\IContainer;
+use Unity\Contracts\Container\IContainerManager;
+use Unity\Reflector\Reflector;
 
 /**
  * Class ContainerManager.
@@ -51,7 +51,7 @@ class ContainerManager implements IContainerManager
 
     /**
      * Returns an `IDependencyFactory` instance.
-     * 
+     *
      * @return IDependencyFactory.
      */
     protected function getDependencyFactory()
@@ -65,7 +65,7 @@ class ContainerManager implements IContainerManager
 
     /**
      * Returns an `IDependencyResolverFactory` instance.
-     * 
+     *
      * @return IDependencyResolverFactory.
      */
     protected function getDependencyResolverFactory()
@@ -75,7 +75,7 @@ class ContainerManager implements IContainerManager
 
     /**
      * Returns an `IBindResolverFactory` instance.
-     * 
+     *
      * @return IBindResolverFactory.
      */
     protected function getBindResolverFactory()
@@ -84,15 +84,15 @@ class ContainerManager implements IContainerManager
     }
 
     /**
-     * Builds an `IContainer` instance. 
-     * 
+     * Builds an `IContainer` instance.
+     *
      * @return IContainer
      */
     public function build()
     {
-        $dependencyFactory         = $this->getDependencyFactory();
+        $dependencyFactory = $this->getDependencyFactory();
         $dependencyResolverFactory = $this->getDependencyResolverFactory();
-        $bindResolverFactory       = $this->getBindResolverFactory();
+        $bindResolverFactory = $this->getBindResolverFactory();
 
         $container = new Container(
             $dependencyFactory,

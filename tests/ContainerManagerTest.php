@@ -3,10 +3,10 @@
 use e200\MakeAccessible\Make;
 use PHPUnit\Framework\TestCase;
 use Unity\Component\Container\ContainerManager;
-use Unity\Contracts\Container\IContainer;
 use Unity\Contracts\Container\Dependency\IDependencyFactory;
-use Unity\Contracts\Container\Factories\IDependencyResolverFactory;
 use Unity\Contracts\Container\Factories\IBindResolverFactory;
+use Unity\Contracts\Container\Factories\IDependencyResolverFactory;
+use Unity\Contracts\Container\IContainer;
 
 class ContainerManagerTest extends TestCase
 {
