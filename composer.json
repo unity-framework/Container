@@ -36,11 +36,11 @@
         },
         {
             "type": "vcs",
-            "url": "../Reflector"
+            "url": "../reflector"
         },
         {
             "type": "vcs",
-            "url": "../MakeAccessible"
+            "url": "../make_accessible"
         }
     ]
 }
