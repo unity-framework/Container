@@ -6,7 +6,7 @@ use ReflectionClass;
 use Unity\Component\Container\Exceptions\ClassNotFoundException;
 use Unity\Component\Container\Exceptions\NonInstantiableClassException;
 use Unity\Contracts\Container\Dependency\IDependencyFactory;
-use Unity\Reflector\Reflector;
+use Unity\Contracts\Reflector\IReflector;
 
 /**
  * Class DependencyBuilder.
@@ -22,15 +22,19 @@ class DependencyFactory implements IDependencyFactory
     /** @var bool */
     protected $useAnnotations = false;
 
-    /** @var Reflector */
+    /** @var IReflector */
     protected $reflector;
 
     /**
      * DependencyBuilder constructor.
      *
-     * @param Reflector $reflector
+     * @param bool $autoResolve     Tells if `$this` can auto resolve dependencies.
+     * @param bool $useAnnotations  Tells if `$this` can auto resolve
+     *                              dependencies using annotations.
+     * 
+     * @param IReflector $reflector Reflection helper contract.
      */
-    public function __construct($autoResolve, $useAnnotations, Reflector $reflector)
+    public function __construct($autoResolve, $useAnnotations, IReflector $reflector)
     {
         $this->autoResolve = $autoResolve;
         $this->useAnnotations = $useAnnotations;
