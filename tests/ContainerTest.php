@@ -1,7 +1,7 @@
 <?php
 
 use e200\MakeAccessible\Make;
-use Helpers\Mocks\TestBase;
+use Unity\Tests\Container\TestBase;
 use Unity\Component\Container\Container;
 use Unity\Component\Container\Exceptions\DuplicateIdException;
 use Unity\Component\Container\Exceptions\NotFoundException;

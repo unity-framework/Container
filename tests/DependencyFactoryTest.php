@@ -1,17 +1,17 @@
 <?php
 
 use e200\MakeAccessible\Make;
-use Helpers\Bar;
-use Helpers\Foo;
-use Helpers\Foobar;
-use Helpers\IFoo;
-use Helpers\Mocks\TestBase;
-use Helpers\WithConstructor;
-use Helpers\WithConstructorParameters;
+use Unity\Tests\Container\Helpers\Bar;
+use Unity\Tests\Container\Helpers\Foo;
+use Unity\Tests\Container\Helpers\Foobar;
+use Unity\Tests\Container\Helpers\IFoo;
+use Unity\Tests\Container\TestBase;
+use Unity\Tests\Container\Helpers\WithConstructor;
+use Unity\Tests\Container\Helpers\WithConstructorParameters;
 use Unity\Component\Container\Dependency\DependencyFactory;
 use Unity\Component\Container\Exceptions\ClassNotFoundException;
 use Unity\Component\Container\Exceptions\NonInstantiableClassException;
-use Unity\Contracts\Container\Bind\IBindResolver;
+use Unity\Contracts\Reflector\IReflector;
 use Unity\Reflector\Reflector;
 
 /**
@@ -78,7 +78,7 @@ class DependencyFactoryTest extends TestBase
 
     public function testGetConstructorArgsWithBinds()
     {
-        $bindResolverMock = $this->createMock(IBindResolver::class);
+        $bindResolverMock = $this->mockBindResolver();
 
         $bindResolverMock
             ->expects($this->once())
@@ -144,13 +144,24 @@ class DependencyFactoryTest extends TestBase
         $df->make(IFoo::class);
     }
 
-    public function getDependencyFactory($autoResolve = true, $canUseAnnotations = false)
-    {
-        return new DependencyFactory($autoResolve, $canUseAnnotations, new Reflector());
+    public function getDependencyFactory(
+        $autoResolve = true,
+        $canUseAnnotations = false
+        ) {
+        return new DependencyFactory(
+            $autoResolve,
+            $canUseAnnotations,
+            new Reflector()
+        );
     }
 
-    public function getAccessibleDependencyFactory($autoResolve = true, $canUseAnnotations = false)
-    {
-        return Make::accessible($this->getDependencyFactory($autoResolve, $canUseAnnotations));
+    public function getAccessibleDependencyFactory(
+        $autoResolve = true,
+        $canUseAnnotations = false
+        ) {
+        return Make::accessible($this->getDependencyFactory(
+            $autoResolve,
+            $canUseAnnotations
+        ));
     }
 }

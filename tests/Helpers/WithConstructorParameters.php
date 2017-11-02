@@ -1,12 +1,6 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: logik
- * Date: 31-07-2017
- * Time: 21:40.
- */
 
-namespace Helpers;
+namespace Unity\Tests\Container\Helpers;
 
 class WithConstructorParameters
 {

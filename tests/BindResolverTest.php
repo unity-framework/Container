@@ -1,6 +1,6 @@
 <?php
 
-use Helpers\Mocks\TestBase;
+use Unity\Tests\Container\TestBase;
 use Unity\Component\Container\Bind\BindResolver;
 
 /**

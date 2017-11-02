@@ -1,6 +1,6 @@
 <?php
 
-namespace Helpers;
+namespace Unity\Tests\Container\Helpers;
 
 class WithoutConstructor
 {

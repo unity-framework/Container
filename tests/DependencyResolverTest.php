@@ -1,9 +1,9 @@
 <?php
 
 use e200\MakeAccessible\Make;
-use Helpers\Bar;
-use Helpers\IFoo;
-use Helpers\Mocks\TestBase;
+use Unity\Tests\Container\Helpers\Bar;
+use Unity\Tests\Container\Helpers\IFoo;
+use Unity\Tests\Container\TestBase;
 use Unity\Component\Container\Dependency\DependencyResolver;
 use Unity\Contracts\Container\Dependency\IDependencyResolver;
 use Unity\Contracts\Container\IContainer;
