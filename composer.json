@@ -27,7 +27,7 @@
     },
     "autoload-dev": {
 	    "psr-4": {
-            "Helpers\\": "tests/Helpers"
+            "Unity\\Tests\\Container\\": "tests"
 	    }
     },
     "repositories": [
