@@ -183,7 +183,7 @@ class Container implements IContainer
     public function setServiceProviders(array $serviceProviders)
     {
         foreach ($serviceProviders as $serviceProvider) {
-            $this->setServiceProvider($serviceProvider);
+            $this->setServiceProvider(new $serviceProvider);
         }
     }
 

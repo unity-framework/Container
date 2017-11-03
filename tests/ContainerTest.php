@@ -3,6 +3,7 @@
 use e200\MakeAccessible\Make;
 use Unity\Tests\Container\TestBase;
 use Unity\Component\Container\Container;
+use Unity\Tests\Container\Helpers\ServiceProvider;
 use Unity\Component\Container\Exceptions\DuplicateIdException;
 use Unity\Component\Container\Exceptions\NotFoundException;
 use Unity\Contracts\Container\Dependency\IDependencyResolver;
@@ -181,32 +182,15 @@ class ContainerTest extends TestBase
     {
         $container = $this->getContainer();
 
-        $container->setServiceProviders([
-            new class() implements IServiceProvider {
-                public function register(IContainer $container)
-                {
-                    $container->set('id1', null);
-                    $container->set('id2', null);
-                }
-            },
-            new class() implements IServiceProvider {
-                public function register(IContainer $container)
-                {
-                    $container->set('id3', null);
-                    $container->set('id4', null);
-                }
-            },
-        ]);
+        $container->setServiceProviders([ServiceProvider::class]);
 
         ////////////////////////////////////////////
         // Checking if at least 2 were registered //
         ////////////////////////////////////////////
         $this->assertTrue($container->has('id1'));
         $this->assertTrue($container->has('id2'));
-        $this->assertTrue($container->has('id3'));
-        $this->assertTrue($container->has('id4'));
 
-        $this->assertCount(4, $container);
+        $this->assertCount(2, $container);
     }
 
     /**
