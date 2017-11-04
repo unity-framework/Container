@@ -1,7 +1,7 @@
 <?php
 
-use Unity\Tests\Container\TestBase;
 use Unity\Component\Container\Bind\BindResolver;
+use Unity\Tests\Container\TestBase;
 
 /**
  * @author Eleandro Duzentos <eleandro@inbox.ru>

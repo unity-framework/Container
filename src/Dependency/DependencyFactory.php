@@ -28,11 +28,10 @@ class DependencyFactory implements IDependencyFactory
     /**
      * DependencyBuilder constructor.
      *
-     * @param bool $autoResolve     Tells if `$this` can auto resolve dependencies.
-     * @param bool $useAnnotations  Tells if `$this` can auto resolve
-     *                              dependencies using annotations.
-     * 
-     * @param IReflector $reflector Reflection helper contract.
+     * @param bool       $autoResolve    Tells if `$this` can auto resolve dependencies.
+     * @param bool       $useAnnotations Tells if `$this` can auto resolve
+     *                                   dependencies using annotations.
+     * @param IReflector $reflector      Reflection helper contract.
      */
     public function __construct($autoResolve, $useAnnotations, IReflector $reflector)
     {
