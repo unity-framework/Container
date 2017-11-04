@@ -1,18 +1,17 @@
 <?php
 
 use e200\MakeAccessible\Make;
+use Unity\Component\Container\Dependency\DependencyFactory;
+use Unity\Component\Container\Exceptions\ClassNotFoundException;
+use Unity\Component\Container\Exceptions\NonInstantiableClassException;
+use Unity\Reflector\Reflector;
 use Unity\Tests\Container\Helpers\Bar;
 use Unity\Tests\Container\Helpers\Foo;
 use Unity\Tests\Container\Helpers\Foobar;
 use Unity\Tests\Container\Helpers\IFoo;
-use Unity\Tests\Container\TestBase;
 use Unity\Tests\Container\Helpers\WithConstructor;
 use Unity\Tests\Container\Helpers\WithConstructorParameters;
-use Unity\Component\Container\Dependency\DependencyFactory;
-use Unity\Component\Container\Exceptions\ClassNotFoundException;
-use Unity\Component\Container\Exceptions\NonInstantiableClassException;
-use Unity\Contracts\Reflector\IReflector;
-use Unity\Reflector\Reflector;
+use Unity\Tests\Container\TestBase;
 
 /**
  * @author Eleandro Duzentos <eleandro@inbox.ru>

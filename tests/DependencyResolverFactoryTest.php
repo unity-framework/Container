@@ -1,8 +1,8 @@
 <?php
 
-use Unity\Tests\Container\TestBase;
 use Unity\Component\Container\Factories\DependencyResolverFactory;
 use Unity\Contracts\Container\Dependency\IDependencyResolver;
+use Unity\Tests\Container\TestBase;
 
 /**
  * @author Eleandro Duzentos <eleandro@inbox.ru>

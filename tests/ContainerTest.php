@@ -1,14 +1,14 @@
 <?php
 
 use e200\MakeAccessible\Make;
-use Unity\Tests\Container\TestBase;
 use Unity\Component\Container\Container;
-use Unity\Tests\Container\Helpers\ServiceProvider;
 use Unity\Component\Container\Exceptions\DuplicateIdException;
 use Unity\Component\Container\Exceptions\NotFoundException;
 use Unity\Contracts\Container\Dependency\IDependencyResolver;
 use Unity\Contracts\Container\IContainer;
 use Unity\Contracts\Container\IServiceProvider;
+use Unity\Tests\Container\Helpers\ServiceProvider;
+use Unity\Tests\Container\TestBase;
 
 /**
  * @author Eleandro Duzentos <eleandro@inbox.ru>
