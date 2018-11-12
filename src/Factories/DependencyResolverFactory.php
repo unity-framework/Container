@@ -3,10 +3,10 @@
 namespace Unity\Component\Container\Factories;
 
 use Unity\Component\Container\Dependency\DependencyResolver;
-use Unity\Contracts\Container\Dependency\IDependencyFactory;
-use Unity\Contracts\Container\Factories\IBindResolverFactory;
-use Unity\Contracts\Container\Factories\IDependencyResolverFactory;
-use Unity\Contracts\Container\IContainer;
+use Unity\Component\Container\Contracts\Dependency\IDependencyFactory;
+use Unity\Component\Container\Contracts\Factories\IBindResolverFactory;
+use Unity\Component\Container\Contracts\Factories\IDependencyResolverFactory;
+use Unity\Component\Container\Contracts\IContainer;
 
 /**
  * Class DependencyResolverFactory.

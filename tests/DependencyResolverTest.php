@@ -2,8 +2,8 @@
 
 use e200\MakeAccessible\Make;
 use Unity\Component\Container\Dependency\DependencyResolver;
-use Unity\Contracts\Container\Dependency\IDependencyResolver;
-use Unity\Contracts\Container\IContainer;
+use Unity\Component\Container\Contracts\Dependency\IDependencyResolver;
+use Unity\Component\Container\Contracts\IContainer;
 use Unity\Tests\Container\Helpers\Bar;
 use Unity\Tests\Container\Helpers\IFoo;
 use Unity\Tests\Container\TestBase;

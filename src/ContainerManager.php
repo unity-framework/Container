@@ -5,8 +5,8 @@ namespace Unity\Component\Container;
 use Unity\Component\Container\Dependency\DependencyFactory;
 use Unity\Component\Container\Factories\BindResolverFactory;
 use Unity\Component\Container\Factories\DependencyResolverFactory;
-use Unity\Contracts\Container\IContainer;
-use Unity\Contracts\Container\IContainerManager;
+use Unity\Component\Container\Contracts\IContainer;
+use Unity\Component\Container\Contracts\IContainerManager;
 use Unity\Reflector\Reflector;
 
 /**
@@ -18,7 +18,7 @@ use Unity\Reflector\Reflector;
  */
 class ContainerManager implements IContainerManager
 {
-    protected $autoResolve = true;
+    protected $autoResolve    = true;
     protected $useAnnotations = false;
 
     /**
@@ -90,9 +90,9 @@ class ContainerManager implements IContainerManager
      */
     public function build()
     {
-        $dependencyFactory = $this->getDependencyFactory();
+        $dependencyFactory         = $this->getDependencyFactory();
         $dependencyResolverFactory = $this->getDependencyResolverFactory();
-        $bindResolverFactory = $this->getBindResolverFactory();
+        $bindResolverFactory       = $this->getBindResolverFactory();
 
         $container = new Container(
             $dependencyFactory,

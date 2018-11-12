@@ -4,9 +4,9 @@ use e200\MakeAccessible\Make;
 use Unity\Component\Container\Container;
 use Unity\Component\Container\Exceptions\DuplicateIdException;
 use Unity\Component\Container\Exceptions\NotFoundException;
-use Unity\Contracts\Container\Dependency\IDependencyResolver;
-use Unity\Contracts\Container\IContainer;
-use Unity\Contracts\Container\IServiceProvider;
+use Unity\Component\Container\Contracts\Dependency\IDependencyResolver;
+use Unity\Component\Container\Contracts\IContainer;
+use Unity\Component\Container\Contracts\IServiceProvider;
 use Unity\Tests\Container\Helpers\ServiceProvider;
 use Unity\Tests\Container\TestBase;
 

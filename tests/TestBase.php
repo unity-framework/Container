@@ -3,12 +3,12 @@
 namespace Unity\Tests\Container;
 
 use PHPUnit\Framework\TestCase;
-use Unity\Contracts\Container\Bind\IBindResolver;
-use Unity\Contracts\Container\Dependency\IDependencyFactory;
-use Unity\Contracts\Container\Dependency\IDependencyResolver;
-use Unity\Contracts\Container\Factories\IBindResolverFactory;
-use Unity\Contracts\Container\Factories\IDependencyResolverFactory;
-use Unity\Contracts\Container\IContainer;
+use Unity\Component\Container\Contracts\Bind\IBindResolver;
+use Unity\Component\Container\Contracts\Dependency\IDependencyFactory;
+use Unity\Component\Container\Contracts\Dependency\IDependencyResolver;
+use Unity\Component\Container\Contracts\Factories\IBindResolverFactory;
+use Unity\Component\Container\Contracts\Factories\IDependencyResolverFactory;
+use Unity\Component\Container\Contracts\IContainer;
 
 class TestBase extends TestCase
 {

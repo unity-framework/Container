@@ -5,12 +5,12 @@ namespace Unity\Component\Container;
 use Psr\Container\NotFoundExceptionInterface;
 use Unity\Component\Container\Exceptions\DuplicateIdException;
 use Unity\Component\Container\Exceptions\NotFoundException;
-use Unity\Contracts\Container\Dependency\IDependencyFactory;
-use Unity\Contracts\Container\Dependency\IDependencyResolver;
-use Unity\Contracts\Container\Factories\IBindResolverFactory;
-use Unity\Contracts\Container\Factories\IDependencyResolverFactory;
-use Unity\Contracts\Container\IContainer;
-use Unity\Contracts\Container\IServiceProvider;
+use Unity\Component\Container\Contracts\Dependency\IDependencyFactory;
+use Unity\Component\Container\Contracts\Dependency\IDependencyResolver;
+use Unity\Component\Container\Contracts\Factories\IBindResolverFactory;
+use Unity\Component\Container\Contracts\Factories\IDependencyResolverFactory;
+use Unity\Component\Container\Contracts\IContainer;
+use Unity\Component\Container\Contracts\IServiceProvider;
 
 /**
  * Class Container.
@@ -40,13 +40,13 @@ class Container implements IContainer
      * @param IBindResolverFactory       $bindResolverFactory
      */
     public function __construct(
-        IDependencyFactory $dependencyFactory,
+        IDependencyFactory         $dependencyFactory,
         IDependencyResolverFactory $dependencyResolverFactory,
-        IBindResolverFactory $bindResolverFactory
+        IBindResolverFactory       $bindResolverFactory
     ) {
-        $this->dependencyFactory = $dependencyFactory;
+        $this->dependencyFactory         = $dependencyFactory;
         $this->dependencyResolverFactory = $dependencyResolverFactory;
-        $this->bindResolverFactory = $bindResolverFactory;
+        $this->bindResolverFactory       = $bindResolverFactory;
     }
 
     /**

@@ -3,37 +3,41 @@
 use e200\MakeAccessible\Make;
 use PHPUnit\Framework\TestCase;
 use Unity\Component\Container\ContainerManager;
-use Unity\Contracts\Container\Dependency\IDependencyFactory;
-use Unity\Contracts\Container\Factories\IBindResolverFactory;
-use Unity\Contracts\Container\Factories\IDependencyResolverFactory;
-use Unity\Contracts\Container\IContainer;
+use Unity\Component\Container\Contracts\Dependency\IDependencyFactory;
+use Unity\Component\Container\Contracts\Factories\IBindResolverFactory;
+use Unity\Component\Container\Contracts\Factories\IDependencyResolverFactory;
+use Unity\Component\Container\Contracts\IContainer;
 
 class ContainerManagerTest extends TestCase
 {
     public function testAutoResolver()
     {
-        $acb = $this->getAccessibleInstance();
-        $cb = $acb->getInstance();
+        $instance = $this->getInstance();
+        $accessibleInstance = $this->getAccessibleInstance($instance);
 
-        $this->assertTrue($acb->autoResolve);
+        /**
+         * `ContainerManager::autoResolve` must
+         * must be true by default
+         */
+        $this->assertTrue($accessibleInstance->autoResolve);
 
-        $cb->autoResolve(false);
-        $this->assertFalse($acb->autoResolve);
-        $cb->autoResolve(true);
-        $this->assertTrue($acb->autoResolve);
+        $instance->autoResolve(false);
+        $this->assertFalse($accessibleInstance->autoResolve);
+        $instance->autoResolve(true);
+        $this->assertTrue($accessibleInstance->autoResolve);
     }
 
     public function testCanUseAnnotations()
     {
-        $acb = $this->getAccessibleInstance();
-        $cb = $acb->getInstance();
+        $instance = $this->getInstance();
+        $accessibleInstance = $this->getAccessibleInstance($instance);
 
-        $this->assertFalse($acb->useAnnotations);
+        $this->assertFalse($accessibleInstance->useAnnotations);
 
-        $cb->canUseAnnotations(true);
-        $this->assertTrue($acb->useAnnotations);
-        $cb->canUseAnnotations(false);
-        $this->assertFalse($acb->useAnnotations);
+        $instance->canUseAnnotations(true);
+        $this->assertTrue($accessibleInstance->useAnnotations);
+        $instance->canUseAnnotations(false);
+        $this->assertFalse($accessibleInstance->useAnnotations);
     }
 
     public function testGetDependencyFactory()
@@ -78,8 +82,12 @@ class ContainerManagerTest extends TestCase
         return new ContainerManager();
     }
 
-    public function getAccessibleInstance()
+    public function getAccessibleInstance($instance = null)
     {
-        return Make::accessible($this->getInstance());
+        if (!$instance) {
+            $instance = $this->getInstance();
+        }
+
+        return Make::accessible($instance);
     }
 }

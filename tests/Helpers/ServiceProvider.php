@@ -2,8 +2,8 @@
 
 namespace Unity\Tests\Container\Helpers;
 
-use Unity\Contracts\Container\IContainer;
-use Unity\Contracts\Container\IServiceProvider;
+use Unity\Component\Container\Contracts\IContainer;
+use Unity\Component\Container\Contracts\IServiceProvider;
 
 class ServiceProvider implements IServiceProvider
 {

@@ -2,8 +2,8 @@
 
 namespace Unity\Component\Container\Bind;
 
-use Unity\Contracts\Container\Bind\IBindResolver;
-use Unity\Contracts\Container\IContainer;
+use Unity\Component\Container\Contracts\Bind\IBindResolver;
+use Unity\Component\Container\Contracts\IContainer;
 
 /**
  * Class BindResolver.
