@@ -3,10 +3,10 @@
 namespace Unity\Component\Container\Dependency;
 
 use ReflectionClass;
-use Unity\Reflector\Contracts\IReflector;
-use Unity\Component\Container\Exceptions\ClassNotFoundException;
 use Unity\Component\Container\Contracts\Dependency\IDependencyFactory;
+use Unity\Component\Container\Exceptions\ClassNotFoundException;
 use Unity\Component\Container\Exceptions\NonInstantiableClassException;
+use Unity\Reflector\Contracts\IReflector;
 
 /**
  * Class DependencyBuilder.
@@ -35,9 +35,9 @@ class DependencyFactory implements IDependencyFactory
      */
     public function __construct($autoResolve, $useAnnotations, IReflector $reflector)
     {
-        $this->autoResolve    = $autoResolve;
+        $this->autoResolve = $autoResolve;
         $this->useAnnotations = $useAnnotations;
-        $this->reflector      = $reflector;
+        $this->reflector = $reflector;
     }
 
     /**

@@ -1,7 +1,7 @@
 <?php
 
-use Unity\Component\Container\Factories\BindResolverFactory;
 use Unity\Component\Container\Contracts\Bind\IBindResolver;
+use Unity\Component\Container\Factories\BindResolverFactory;
 use Unity\Tests\Container\TestBase;
 
 /**
