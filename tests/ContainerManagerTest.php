@@ -15,7 +15,7 @@ class ContainerManagerTest extends TestCase
         $instance = $this->getInstance();
         $accessibleInstance = $this->getAccessibleInstance($instance);
 
-        /**
+        /*
          * `ContainerManager::autoResolve` must
          * must be true by default
          */
