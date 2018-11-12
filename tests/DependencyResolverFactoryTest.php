@@ -1,7 +1,7 @@
 <?php
 
-use Unity\Component\Container\Factories\DependencyResolverFactory;
 use Unity\Component\Container\Contracts\Dependency\IDependencyResolver;
+use Unity\Component\Container\Factories\DependencyResolverFactory;
 use Unity\Tests\Container\TestBase;
 
 /**
